@@ -1,0 +1,31 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: design-rag-studio
+  datasource:
+    url: jdbc:h2:mem:designrag;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: false
+
+info:
+  app:
+    name: design-rag-studio
+
+app:
+  security:
+    api-key: ${DESIGN_RAG_API_KEY:}

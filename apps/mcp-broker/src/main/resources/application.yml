@@ -1,0 +1,28 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: mcp-broker
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: false
+
+info:
+  app:
+    name: mcp-broker
+
+app:
+  security:
+    api-key: ${MCP_BROKER_API_KEY:}
+  mcp:
+    remote-url: ${MCP_REMOTE_URL:}

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "agentic-ai-portfolio.fullname" . }}-config
+  labels:
+    {{- include "agentic-ai-portfolio.labels" . | nindent 4 }}
+data:
+  SPRING_PROFILES_ACTIVE: {{ .Values.global.springProfile | quote }}
+  GATEWAY_DOWNSTREAM_URL: "http://{{ .Values.gatewayDownstreamService }}:{{ .Values.gatewayDownstreamPort }}"

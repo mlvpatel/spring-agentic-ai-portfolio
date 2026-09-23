@@ -1,0 +1,26 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: agent-observability
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: false
+
+info:
+  app:
+    name: agent-observability
+
+app:
+  security:
+    api-key: ${OBSERVABILITY_API_KEY:}

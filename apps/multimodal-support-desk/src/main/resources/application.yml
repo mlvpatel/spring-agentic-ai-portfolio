@@ -1,0 +1,26 @@
+server:
+  port: 8091
+
+spring:
+  application:
+    name: multimodal-support-desk
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: false
+
+info:
+  app:
+    name: multimodal-support-desk
+
+app:
+  security:
+    api-key: ${MULTIMODAL_DESK_API_KEY:}

@@ -1,0 +1,11 @@
+services:
+  agent-observability:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./target/agent-observability-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      OBSERVABILITY_API_KEY: ${OBSERVABILITY_API_KEY:-local-dev-only-change-me}
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8085:8085"

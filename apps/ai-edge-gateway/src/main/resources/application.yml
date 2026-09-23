@@ -1,0 +1,174 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ai-edge-gateway
+  cloud:
+    gateway:
+      # Spring Cloud Gateway 5 (Boot 4) binds under server.webflux
+      server:
+        webflux:
+          default-filters:
+            - ApiKeyAuth
+            - RateLimiting
+          routes:
+            # Prefixed routes (disambiguates /api/v1/generate and /api/v1/ingest collisions)
+            - id: svc-yagni-copilot
+              uri: ${GATEWAY_URL_YAGNI:http://yagni-copilot:8081}
+              predicates:
+                - Path=/svc/yagni-copilot/**
+              filters:
+                - RewritePath=/svc/yagni-copilot/(?<rest>.*), /$\{rest}
+            - id: svc-design-rag-studio
+              uri: ${GATEWAY_URL_DESIGN_RAG:http://design-rag-studio:8082}
+              predicates:
+                - Path=/svc/design-rag-studio/**
+              filters:
+                - RewritePath=/svc/design-rag-studio/(?<rest>.*), /$\{rest}
+            - id: svc-quality-gate
+              uri: ${GATEWAY_URL_QUALITY_GATE:http://quality-gate:8083}
+              predicates:
+                - Path=/svc/quality-gate/**
+              filters:
+                - RewritePath=/svc/quality-gate/(?<rest>.*), /$\{rest}
+            - id: svc-spec-orchestrator
+              uri: ${GATEWAY_URL_SPEC_ORCH:http://spec-orchestrator:8084}
+              predicates:
+                - Path=/svc/spec-orchestrator/**
+              filters:
+                - RewritePath=/svc/spec-orchestrator/(?<rest>.*), /$\{rest}
+            - id: svc-agent-observability
+              uri: ${GATEWAY_URL_OBSERVABILITY:http://agent-observability:8085}
+              predicates:
+                - Path=/svc/agent-observability/**
+              filters:
+                - RewritePath=/svc/agent-observability/(?<rest>.*), /$\{rest}
+            - id: svc-mcp-broker
+              uri: ${GATEWAY_URL_MCP_BROKER:http://mcp-broker:8086}
+              predicates:
+                - Path=/svc/mcp-broker/**
+              filters:
+                - RewritePath=/svc/mcp-broker/(?<rest>.*), /$\{rest}
+            - id: svc-app-factory
+              uri: ${GATEWAY_URL_APP_FACTORY:http://app-factory:8087}
+              predicates:
+                - Path=/svc/app-factory/**
+              filters:
+                - RewritePath=/svc/app-factory/(?<rest>.*), /$\{rest}
+            - id: svc-paper-algorithm-lab
+              uri: ${GATEWAY_URL_PAPER_LAB:http://paper-algorithm-lab:8088}
+              predicates:
+                - Path=/svc/paper-algorithm-lab/**
+              filters:
+                - RewritePath=/svc/paper-algorithm-lab/(?<rest>.*), /$\{rest}
+            - id: svc-system-architect
+              uri: ${GATEWAY_URL_ARCHITECT:http://system-architect:8089}
+              predicates:
+                - Path=/svc/system-architect/**
+              filters:
+                - RewritePath=/svc/system-architect/(?<rest>.*), /$\{rest}
+            - id: svc-multimodal-support-desk
+              uri: ${GATEWAY_URL_MULTIMODAL:http://multimodal-support-desk:8091}
+              predicates:
+                - Path=/svc/multimodal-support-desk/**
+              filters:
+                - RewritePath=/svc/multimodal-support-desk/(?<rest>.*), /$\{rest}
+            - id: svc-kotlin-rag-microservice
+              uri: ${GATEWAY_URL_KOTLIN_RAG:http://kotlin-rag-microservice:8092}
+              predicates:
+                - Path=/svc/kotlin-rag-microservice/**
+              filters:
+                - RewritePath=/svc/kotlin-rag-microservice/(?<rest>.*), /$\{rest}
+            - id: svc-ai-validated-integration-harness
+              uri: ${GATEWAY_URL_HARNESS:http://ai-validated-integration-harness:8093}
+              predicates:
+                - Path=/svc/ai-validated-integration-harness/**
+              filters:
+                - RewritePath=/svc/ai-validated-integration-harness/(?<rest>.*), /$\{rest}
+            - id: svc-security-review-assistant
+              uri: ${GATEWAY_URL_SECURITY_REVIEW:http://security-review-assistant:8094}
+              predicates:
+                - Path=/svc/security-review-assistant/**
+              filters:
+                - RewritePath=/svc/security-review-assistant/(?<rest>.*), /$\{rest}
+
+            # Unique path aliases (no collisions across apps)
+            - id: alias-patch
+              uri: ${GATEWAY_URL_YAGNI:http://yagni-copilot:8081}
+              predicates:
+                - Path=/api/v1/patch
+            - id: alias-gate
+              uri: ${GATEWAY_URL_QUALITY_GATE:http://quality-gate:8083}
+              predicates:
+                - Path=/api/v1/gate
+            - id: alias-runs
+              uri: ${GATEWAY_URL_SPEC_ORCH:http://spec-orchestrator:8084}
+              predicates:
+                - Path=/api/v1/runs,/api/v1/runs/**
+            - id: alias-trajectories
+              uri: ${GATEWAY_URL_OBSERVABILITY:http://agent-observability:8085}
+              predicates:
+                - Path=/api/v1/trajectories,/api/v1/analyze
+            - id: alias-mcp
+              uri: ${GATEWAY_URL_MCP_BROKER:http://mcp-broker:8086}
+              predicates:
+                - Path=/api/v1/tools,/api/v1/invoke
+            - id: alias-blueprints
+              uri: ${GATEWAY_URL_APP_FACTORY:http://app-factory:8087}
+              predicates:
+                - Path=/api/v1/blueprints
+            - id: alias-papers
+              uri: ${GATEWAY_URL_PAPER_LAB:http://paper-algorithm-lab:8088}
+              predicates:
+                - Path=/api/v1/papers,/api/v1/synthesize
+            - id: alias-architect
+              uri: ${GATEWAY_URL_ARCHITECT:http://system-architect:8089}
+              predicates:
+                - Path=/api/v1/architect
+            - id: alias-triage
+              uri: ${GATEWAY_URL_MULTIMODAL:http://multimodal-support-desk:8091}
+              predicates:
+                - Path=/api/v1/triage
+            - id: alias-query
+              uri: ${GATEWAY_URL_KOTLIN_RAG:http://kotlin-rag-microservice:8092}
+              predicates:
+                - Path=/api/v1/query
+            - id: alias-validate
+              uri: ${GATEWAY_URL_HARNESS:http://ai-validated-integration-harness:8093}
+              predicates:
+                - Path=/api/v1/validate
+            - id: alias-review
+              uri: ${GATEWAY_URL_SECURITY_REVIEW:http://security-review-assistant:8094}
+              predicates:
+                - Path=/api/v1/review
+
+            # Fallback single-downstream (sandbox retarget / local). Last so aliases win.
+            - id: route-downstream
+              uri: ${GATEWAY_DOWNSTREAM_URL:http://localhost:8090}
+              predicates:
+                - Path=/api/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: false
+
+info:
+  app:
+    name: ai-edge-gateway
+    description: Portfolio edge gateway
+
+gateway:
+  security:
+    apiKey: ${GATEWAY_SECURITY_APIKEY:${GATEWAY_API_KEY:}}
+  rateLimiter:
+    replenishRate: 100
+    burstCapacity: 200

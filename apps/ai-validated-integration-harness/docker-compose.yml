@@ -1,0 +1,10 @@
+services:
+  ai-validated-integration-harness:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./target/ai-validated-integration-harness-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8093"
+      AI_HARNESS_API_KEY: ${AI_HARNESS_API_KEY:-local-dev-only-change-me}
+    command: ["java", "-jar", "/app/app.jar"]

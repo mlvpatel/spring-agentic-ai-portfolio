@@ -1,0 +1,10 @@
+spring:
+  main:
+    web-application-type: reactive
+
+gateway:
+  security:
+    apiKey: test-gateway-api-key-for-unit-tests-only
+  rateLimiter:
+    replenishRate: 100
+    burstCapacity: 200

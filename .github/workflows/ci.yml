@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+
+      - name: Secret pattern scan
+        run: |
+          set -euo pipefail
+          # Fail on likely real secrets in the tree (exclude docs that mention patterns)
+          if git grep -nE 'sk-[a-zA-Z0-9]{20,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|GATEWAY_SECURITY_APIKEY=[^$\s{[:space:]]+' -- \
+            ':!.github/workflows/ci.yml' \
+            ':!**/FOLDER-STRUCTURE-PROPOSAL.md' \
+            ':!**/*.md' \
+            ':!**/SecurityAstScanner*.java' \
+            ':!**/SecurityAstScannerTest.java' \
+            ':!**/demo-portfolio.sh' 2>/dev/null; then
+            echo "Possible secret material found" >&2
+            exit 1
+          fi
+          if find . -name '*.p12' -not -path './.git/*' | grep -q .; then
+            echo "PKCS12 files must not be committed" >&2
+            exit 1
+          fi
+          echo "Secret scan clean"
+
+      - name: Unit tests
+        run: ./mvnw -B -DskipITs test
+
+  gitleaks:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

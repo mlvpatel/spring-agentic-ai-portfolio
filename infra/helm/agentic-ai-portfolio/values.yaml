@@ -1,0 +1,278 @@
+# Helm values for live apps/* (P1–P10). Pass secrets via --set or -f secrets.yaml (not committed).
+
+global:
+  environment: local
+  springProfile: default
+  imageRegistry: agentic-ai
+  imagePullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "180"
+  hosts:
+    - host: agentic-ai.internal
+      paths:
+        - path: /
+          pathType: Prefix
+          serviceName: ai-edge-gateway
+          servicePort: 8080
+  tls:
+    - secretName: agentic-ai-tls
+      hosts:
+        - agentic-ai.internal
+
+monitoring:
+  enabled: true
+  prometheus:
+    scrape: "true"
+    path: "/actuator/prometheus"
+
+# Required at install time (no chart defaults that look like real keys).
+gatewaySecurityApiKey: ""
+# Optional per-app API keys (empty allowed for offline paths).
+apiKeys:
+  yagni: ""
+  designRag: ""
+  qualityGate: ""
+  specOrch: ""
+  observability: ""
+  mcpBroker: ""
+  appFactory: ""
+  paperLab: ""
+  architect: ""
+
+# Default single downstream for P10 (full P1–P9 route table is not wired yet).
+gatewayDownstreamService: yagni-copilot
+gatewayDownstreamPort: 8081
+
+services:
+  yagniCopilot:
+    name: yagni-copilot
+    apiKeyEnv: YAGNI_API_KEY
+    apiKeyValueKey: yagni
+    image:
+      repository: yagni-copilot
+      tag: 1.0.0-SNAPSHOT
+    port: 8081
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  designRagStudio:
+    name: design-rag-studio
+    apiKeyEnv: DESIGN_RAG_API_KEY
+    apiKeyValueKey: designRag
+    image:
+      repository: design-rag-studio
+      tag: 1.0.0-SNAPSHOT
+    port: 8082
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  qualityGate:
+    name: quality-gate
+    apiKeyEnv: QUALITY_GATE_API_KEY
+    apiKeyValueKey: qualityGate
+    image:
+      repository: quality-gate
+      tag: 1.0.0-SNAPSHOT
+    port: 8083
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  specOrchestrator:
+    name: spec-orchestrator
+    apiKeyEnv: SPEC_ORCH_API_KEY
+    apiKeyValueKey: specOrch
+    image:
+      repository: spec-orchestrator
+      tag: 1.0.0-SNAPSHOT
+    port: 8084
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  agentObservability:
+    name: agent-observability
+    apiKeyEnv: OBSERVABILITY_API_KEY
+    apiKeyValueKey: observability
+    image:
+      repository: agent-observability
+      tag: 1.0.0-SNAPSHOT
+    port: 8085
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  mcpBroker:
+    name: mcp-broker
+    apiKeyEnv: MCP_BROKER_API_KEY
+    apiKeyValueKey: mcpBroker
+    image:
+      repository: mcp-broker
+      tag: 1.0.0-SNAPSHOT
+    port: 8086
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  appFactory:
+    name: app-factory
+    apiKeyEnv: APP_FACTORY_API_KEY
+    apiKeyValueKey: appFactory
+    image:
+      repository: app-factory
+      tag: 1.0.0-SNAPSHOT
+    port: 8087
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  paperAlgorithmLab:
+    name: paper-algorithm-lab
+    apiKeyEnv: PAPER_LAB_API_KEY
+    apiKeyValueKey: paperLab
+    image:
+      repository: paper-algorithm-lab
+      tag: 1.0.0-SNAPSHOT
+    port: 8088
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  systemArchitect:
+    name: system-architect
+    apiKeyEnv: ARCHITECT_API_KEY
+    apiKeyValueKey: architect
+    image:
+      repository: system-architect
+      tag: 1.0.0-SNAPSHOT
+    port: 8089
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  aiEdgeGateway:
+    name: ai-edge-gateway
+    image:
+      repository: ai-edge-gateway
+      tag: 1.0.0-SNAPSHOT
+    port: 8080
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 70
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health

@@ -1,0 +1,10 @@
+services:
+  kotlin-rag-microservice:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./target/kotlin-rag-microservice-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8092"
+      KOTLIN_RAG_API_KEY: ${KOTLIN_RAG_API_KEY:-local-dev-only-change-me}
+    command: ["java", "-jar", "/app/app.jar"]

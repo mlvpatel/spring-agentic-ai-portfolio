@@ -1,0 +1,27 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: yagni-copilot
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: false
+
+info:
+  app:
+    name: yagni-copilot
+    description: YAGNI coding copilot API
+
+app:
+  security:
+    api-key: ${YAGNI_API_KEY:}

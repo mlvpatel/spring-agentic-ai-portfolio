@@ -1,0 +1,7 @@
+app:
+  security:
+    api-key: test-agent-observability-api-key-for-unit-tests-only
+
+spring:
+  main:
+    banner-mode: "off"

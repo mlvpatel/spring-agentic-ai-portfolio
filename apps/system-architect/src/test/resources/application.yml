@@ -1,0 +1,7 @@
+app:
+  security:
+    api-key: test-system-architect-api-key-for-unit-tests-only
+
+spring:
+  main:
+    banner-mode: "off"

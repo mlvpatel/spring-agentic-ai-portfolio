@@ -1,0 +1,77 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+# Targets use compose/Helm service DNS names for apps/*.
+# Apps currently expose health/info only; scrape fails until /actuator/prometheus is enabled.
+
+scrape_configs:
+  - job_name: 'ai-edge-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['ai-edge-gateway:8080']
+
+  - job_name: 'yagni-copilot'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['yagni-copilot:8081']
+
+  - job_name: 'design-rag-studio'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['design-rag-studio:8082']
+
+  - job_name: 'quality-gate'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['quality-gate:8083']
+
+  - job_name: 'spec-orchestrator'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['spec-orchestrator:8084']
+
+  - job_name: 'agent-observability'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['agent-observability:8085']
+
+  - job_name: 'mcp-broker'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['mcp-broker:8086']
+
+  - job_name: 'app-factory'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['app-factory:8087']
+
+  - job_name: 'paper-algorithm-lab'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['paper-algorithm-lab:8088']
+
+  - job_name: 'system-architect'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['system-architect:8089']
+
+  - job_name: 'multimodal-support-desk'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['multimodal-support-desk:8091']
+
+  - job_name: 'kotlin-rag-microservice'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['kotlin-rag-microservice:8092']
+
+  - job_name: 'ai-validated-integration-harness'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['ai-validated-integration-harness:8093']
+
+  - job_name: 'security-review-assistant'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['security-review-assistant:8094']

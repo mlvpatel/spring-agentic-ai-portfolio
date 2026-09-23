@@ -1,0 +1,11 @@
+services:
+  design-rag-studio:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./target/design-rag-studio-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      DESIGN_RAG_API_KEY: ${DESIGN_RAG_API_KEY:-local-dev-only-change-me}
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8082:8082"

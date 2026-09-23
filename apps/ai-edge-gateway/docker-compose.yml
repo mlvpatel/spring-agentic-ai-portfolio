@@ -1,0 +1,13 @@
+services:
+  ai-edge-gateway:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./target/ai-edge-gateway-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+    environment:
+      GATEWAY_SECURITY_APIKEY: ${GATEWAY_SECURITY_APIKEY:?set in .env locally}
+      GATEWAY_DOWNSTREAM_URL: ${GATEWAY_DOWNSTREAM_URL:-http://host.docker.internal:8090}
+    ports:
+      - "8080:8080"
+    # Local dry-run only. Do not push this image. Do not deploy to cloud/prod from the SDLC loop.

@@ -1,0 +1,26 @@
+server:
+  port: 8094
+
+spring:
+  application:
+    name: security-review-assistant
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: false
+
+info:
+  app:
+    name: security-review-assistant
+
+app:
+  security:
+    api-key: ${SECURITY_REVIEW_API_KEY:}

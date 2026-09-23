@@ -1,0 +1,7 @@
+app:
+  security:
+    api-key: test-paper-algorithm-lab-api-key-for-unit-tests-only
+
+spring:
+  main:
+    banner-mode: "off"

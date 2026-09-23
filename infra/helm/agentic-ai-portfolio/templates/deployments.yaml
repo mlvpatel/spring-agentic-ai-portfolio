@@ -1,0 +1,80 @@
+{{- range $serviceKey, $svc := .Values.services }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $svc.name }}
+  labels:
+    {{- include "agentic-ai-portfolio.labels" $ | nindent 4 }}
+    app.kubernetes.io/name: {{ $svc.name }}
+    app.kubernetes.io/component: microservice
+spec:
+  {{- if not $svc.autoscaling.enabled }}
+  replicas: {{ $svc.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $svc.name }}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: {{ $.Values.monitoring.prometheus.scrape | quote }}
+        prometheus.io/path: {{ $.Values.monitoring.prometheus.path | quote }}
+        prometheus.io/port: {{ $svc.port | quote }}
+      labels:
+        {{- include "agentic-ai-portfolio.labels" $ | nindent 8 }}
+        app.kubernetes.io/name: {{ $svc.name }}
+    spec:
+      containers:
+        - name: {{ $svc.name }}
+          image: "{{ $.Values.global.imageRegistry }}/{{ $svc.image.repository }}:{{ $svc.image.tag }}"
+          imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ $svc.port }}
+              protocol: TCP
+          env:
+            - name: SERVER_PORT
+              value: {{ $svc.port | quote }}
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "agentic-ai-portfolio.fullname" $ }}-config
+                  key: SPRING_PROFILES_ACTIVE
+            {{- if eq $serviceKey "aiEdgeGateway" }}
+            - name: GATEWAY_SECURITY_APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "agentic-ai-portfolio.fullname" $ }}-secrets
+                  key: GATEWAY_SECURITY_APIKEY
+            - name: GATEWAY_DOWNSTREAM_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "agentic-ai-portfolio.fullname" $ }}-config
+                  key: GATEWAY_DOWNSTREAM_URL
+            {{- else }}
+            - name: {{ $svc.apiKeyEnv }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "agentic-ai-portfolio.fullname" $ }}-secrets
+                  key: {{ $svc.apiKeyEnv }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: {{ $svc.healthPath }}
+              port: http
+            initialDelaySeconds: 40
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: {{ $svc.healthPath }}
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            {{- toYaml $svc.resources | nindent 12 }}
+{{- end }}

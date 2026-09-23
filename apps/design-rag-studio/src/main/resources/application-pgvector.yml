@@ -1,0 +1,7 @@
+# Optional Postgres (compose service design-rag-db). No paid embeddings/LLM.
+spring:
+  datasource:
+    url: ${DESIGN_RAG_JDBC_URL:jdbc:postgresql://localhost:5433/design}
+    username: ${DESIGN_RAG_JDBC_USER:postgres}
+    password: ${DESIGN_RAG_JDBC_PASSWORD:design}
+    driver-class-name: org.postgresql.Driver

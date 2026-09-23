@@ -1,0 +1,11 @@
+services:
+  paper-algorithm-lab:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./target/paper-algorithm-lab-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      PAPER_LAB_API_KEY: ${PAPER_LAB_API_KEY:-local-dev-only-change-me}
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8088:8088"

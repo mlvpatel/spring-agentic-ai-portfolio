@@ -1,0 +1,11 @@
+services:
+  mcp-broker:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./target/mcp-broker-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      MCP_BROKER_API_KEY: ${MCP_BROKER_API_KEY:-local-dev-only-change-me}
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8086:8086"

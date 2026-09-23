@@ -1,0 +1,10 @@
+services:
+  multimodal-support-desk:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./target/multimodal-support-desk-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8091"
+      MULTIMODAL_DESK_API_KEY: ${MULTIMODAL_DESK_API_KEY:-local-dev-only-change-me}
+    command: ["java", "-jar", "/app/app.jar"]

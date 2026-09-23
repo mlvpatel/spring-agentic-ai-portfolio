@@ -1,0 +1,10 @@
+services:
+  security-review-assistant:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./target/security-review-assistant-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8094"
+      SECURITY_REVIEW_API_KEY: ${SECURITY_REVIEW_API_KEY:-local-dev-only-change-me}
+    command: ["java", "-jar", "/app/app.jar"]

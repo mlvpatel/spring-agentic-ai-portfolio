@@ -1,0 +1,11 @@
+services:
+  app-factory:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ./target/app-factory-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      APP_FACTORY_API_KEY: ${APP_FACTORY_API_KEY:-local-dev-only-change-me}
+    command: ["java", "-jar", "/app/app.jar"]
+    ports:
+      - "8087:8087"

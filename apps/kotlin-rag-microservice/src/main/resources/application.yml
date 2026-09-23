@@ -1,0 +1,26 @@
+server:
+  port: 8092
+
+spring:
+  application:
+    name: kotlin-rag-microservice
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: false
+
+info:
+  app:
+    name: kotlin-rag-microservice
+
+app:
+  security:
+    api-key: ${KOTLIN_RAG_API_KEY:}

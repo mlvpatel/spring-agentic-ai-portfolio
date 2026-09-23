@@ -1,0 +1,31 @@
+server:
+  port: 8088
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:paperlab;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  application:
+    name: paper-algorithm-lab
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: false
+
+info:
+  app:
+    name: paper-algorithm-lab
+
+app:
+  security:
+    api-key: ${PAPER_LAB_API_KEY:}

@@ -1,0 +1,239 @@
+# Stack compose for live apps/* (P1–P10 + S1–S4).
+# Build jars first: mvn -DskipTests package
+# Only the gateway publishes a host port. Internal apps stay on the compose network.
+# Copy .env.example → .env and set keys before `docker compose up`.
+
+services:
+  yagni-copilot:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/yagni-copilot/target/yagni-copilot-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8081"
+      YAGNI_API_KEY: ${YAGNI_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+  design-rag-studio:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/design-rag-studio/target/design-rag-studio-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8082"
+      DESIGN_RAG_API_KEY: ${DESIGN_RAG_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+  quality-gate:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/quality-gate/target/quality-gate-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8083"
+      QUALITY_GATE_API_KEY: ${QUALITY_GATE_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+  spec-orchestrator:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/spec-orchestrator/target/spec-orchestrator-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8084"
+      SPEC_ORCH_API_KEY: ${SPEC_ORCH_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+  agent-observability:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/agent-observability/target/agent-observability-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8085"
+      OBSERVABILITY_API_KEY: ${OBSERVABILITY_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+  mcp-broker:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/mcp-broker/target/mcp-broker-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8086"
+      MCP_BROKER_API_KEY: ${MCP_BROKER_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+  app-factory:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/app-factory/target/app-factory-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8087"
+      APP_FACTORY_API_KEY: ${APP_FACTORY_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+  paper-algorithm-lab:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/paper-algorithm-lab/target/paper-algorithm-lab-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8088"
+      PAPER_LAB_API_KEY: ${PAPER_LAB_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+  system-architect:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/system-architect/target/system-architect-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8089"
+      ARCHITECT_API_KEY: ${ARCHITECT_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+
+  multimodal-support-desk:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/multimodal-support-desk/target/multimodal-support-desk-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8091"
+      MULTIMODAL_DESK_API_KEY: ${MULTIMODAL_DESK_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+  kotlin-rag-microservice:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/kotlin-rag-microservice/target/kotlin-rag-microservice-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8092"
+      KOTLIN_RAG_API_KEY: ${KOTLIN_RAG_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+  ai-validated-integration-harness:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/ai-validated-integration-harness/target/ai-validated-integration-harness-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8093"
+      AI_HARNESS_API_KEY: ${AI_HARNESS_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+  security-review-assistant:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/security-review-assistant/target/security-review-assistant-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      SERVER_PORT: "8094"
+      SECURITY_REVIEW_API_KEY: ${SECURITY_REVIEW_API_KEY:-}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+
+  # Optional Postgres for design-rag / paper-lab profile=pgvector (no paid key).
+  design-rag-db:
+    image: postgres:16-alpine
+    profiles: ["pgvector"]
+    environment:
+      POSTGRES_DB: design
+      POSTGRES_PASSWORD: design
+    ports:
+      - "5433:5432"
+    networks:
+      - agentic-network
+
+  # Sole agent ingress on host :8080. Path aliases + /svc/<app>/** prefixes; GATEWAY_DOWNSTREAM_URL is fallback.
+  ai-edge-gateway:
+    image: eclipse-temurin:21-jre
+    working_dir: /app
+    volumes:
+      - ../../apps/ai-edge-gateway/target/ai-edge-gateway-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_PORT: "8080"
+      GATEWAY_SECURITY_APIKEY: ${GATEWAY_SECURITY_APIKEY:?Set GATEWAY_SECURITY_APIKEY in the environment — no demo default}
+      GATEWAY_DOWNSTREAM_URL: ${GATEWAY_DOWNSTREAM_URL:-http://yagni-copilot:8081}
+    command: ["java", "-jar", "/app/app.jar"]
+    networks:
+      - agentic-network
+    depends_on:
+      - yagni-copilot
+      - design-rag-studio
+      - quality-gate
+      - spec-orchestrator
+      - agent-observability
+      - mcp-broker
+      - app-factory
+      - paper-algorithm-lab
+      - system-architect
+      - multimodal-support-desk
+      - kotlin-rag-microservice
+      - ai-validated-integration-harness
+      - security-review-assistant
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    networks:
+      - agentic-network
+
+  grafana:
+    image: grafana/grafana:10.4.5
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in the environment — no demo default}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      # File bind for provider YAML so dashboards JSON can mount beside it (nested dir under :ro fails on Docker Desktop).
+      - ../monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ../monitoring/grafana/provisioning/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - agentic-network
+
+networks:
+  agentic-network:
+    driver: bridge
