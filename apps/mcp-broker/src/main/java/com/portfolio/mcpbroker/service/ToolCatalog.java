@@ -1,5 +1,6 @@
 package com.portfolio.mcpbroker.service;
 
+import com.portfolio.shared.ai.PortfolioAiClient;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -11,9 +12,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ToolCatalog {
     private final ConcurrentHashMap<String, Map<String, Object>> tools = new ConcurrentHashMap<>();
     private final RemoteToolClient remoteToolClient;
+    private final PortfolioAiClient portfolioAiClient;
 
-    public ToolCatalog(RemoteToolClient remoteToolClient) {
+    public ToolCatalog(RemoteToolClient remoteToolClient, PortfolioAiClient portfolioAiClient) {
         this.remoteToolClient = remoteToolClient;
+        this.portfolioAiClient = portfolioAiClient;
     }
 
     public Map<String, Object> register(String name, String scope, Map<String, Object> schema) {
@@ -47,12 +50,15 @@ public class ToolCatalog {
             live.put("registeredScope", tool.get("scope"));
             return live;
         }
-        return Map.of(
-                "mode", "offline",
-                "tool", name,
-                "accepted", true,
-                "result", Map.of(
-                        "echoArgs", args == null ? Map.of() : args,
-                        "note", "Local stub invocation; set app.mcp.remote-url for live-http."));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("echoArgs", args == null ? Map.of() : args);
+        result.put("note", "Local stub invocation; set app.mcp.remote-url for live-http.");
+        result.put("aiDescription", portfolioAiClient.assist("tool-description", name));
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("mode", "offline");
+        out.put("tool", name);
+        out.put("accepted", true);
+        out.put("result", result);
+        return out;
     }
 }

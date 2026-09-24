@@ -142,12 +142,30 @@ spring:
               uri: ${GATEWAY_URL_SECURITY_REVIEW:http://security-review-assistant:8094}
               predicates:
                 - Path=/api/v1/review
-
-            # Fallback single-downstream (sandbox retarget / local). Last so aliases win.
-            - id: route-downstream
-              uri: ${GATEWAY_DOWNSTREAM_URL:http://localhost:8090}
+            - id: alias-design-rag-ingest
+              uri: ${GATEWAY_URL_DESIGN_RAG:http://design-rag-studio:8082}
               predicates:
-                - Path=/api/**
+                - Path=/api/v1/design-rag/ingest
+              filters:
+                - RewritePath=/api/v1/design-rag/ingest, /api/v1/ingest
+            - id: alias-design-rag-generate
+              uri: ${GATEWAY_URL_DESIGN_RAG:http://design-rag-studio:8082}
+              predicates:
+                - Path=/api/v1/design-rag/generate
+              filters:
+                - RewritePath=/api/v1/design-rag/generate, /api/v1/generate
+            - id: alias-app-factory-generate
+              uri: ${GATEWAY_URL_APP_FACTORY:http://app-factory:8087}
+              predicates:
+                - Path=/api/v1/app-factory/generate
+              filters:
+                - RewritePath=/api/v1/app-factory/generate, /api/v1/generate
+            - id: alias-kotlin-rag-ingest
+              uri: ${GATEWAY_URL_KOTLIN_RAG:http://kotlin-rag-microservice:8092}
+              predicates:
+                - Path=/api/v1/kotlin-rag/ingest
+              filters:
+                - RewritePath=/api/v1/kotlin-rag/ingest, /api/v1/ingest
 
 management:
   endpoints:
@@ -169,6 +187,8 @@ info:
 gateway:
   security:
     apiKey: ${GATEWAY_SECURITY_APIKEY:${GATEWAY_API_KEY:}}
+    oidcIssuerUri: ${OIDC_ISSUER_URI:}
   rateLimiter:
     replenishRate: 100
     burstCapacity: 200
+    redisUrl: ${REDIS_URL:}

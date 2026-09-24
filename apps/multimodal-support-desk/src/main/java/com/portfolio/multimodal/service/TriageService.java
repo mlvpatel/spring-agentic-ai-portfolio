@@ -1,5 +1,6 @@
 package com.portfolio.multimodal.service;
 
+import com.portfolio.shared.ai.PortfolioAiClient;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,6 +11,12 @@ import java.util.Map;
 
 @Service
 public class TriageService {
+
+    private final PortfolioAiClient portfolioAiClient;
+
+    public TriageService(PortfolioAiClient portfolioAiClient) {
+        this.portfolioAiClient = portfolioAiClient;
+    }
 
     public Map<String, Object> handle(Map<String, Object> body) {
         String ticket = str(body, "ticket");
@@ -25,6 +32,7 @@ public class TriageService {
         out.put("hasImageMeta", hasImage);
         out.put("summary", "Triage: " + ticket.strip().lines().findFirst().orElse("").strip());
         out.put("nextSteps", List.of("ack customer", hasImage ? "inspect attached image meta" : "request screenshot if needed"));
+        out.put("aiNote", portfolioAiClient.assist("triage-note", ticket));
         return out;
     }
 

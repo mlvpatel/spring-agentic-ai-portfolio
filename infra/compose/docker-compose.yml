@@ -1,194 +1,260 @@
-# Stack compose for live apps/* (P1–P10 + S1–S4).
-# Build jars first: mvn -DskipTests package
-# Only the gateway publishes a host port. Internal apps stay on the compose network.
-# Copy .env.example → .env and set keys before `docker compose up`.
+# Prod-oriented stack: builds app images from jars (run ./mvnw -DskipTests package first).
+# Fast jar-mount override: docker compose -f docker-compose.yml -f docker-compose.dev.yml ...
+# Optional: --profile postgres (P2/P8 JDBC), --profile tls (nginx :8443).
+# Copy .env.example → .env and set GATEWAY_SECURITY_APIKEY + GRAFANA_ADMIN_PASSWORD.
+
+x-app-build: &app-build
+  context: ../..
+  dockerfile: infra/docker/Dockerfile.app
 
 services:
-  yagni-copilot:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/yagni-copilot/target/yagni-copilot-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8081"
-      YAGNI_API_KEY: ${YAGNI_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
+  redis:
+    image: redis:7-alpine
     networks:
       - agentic-network
 
-  design-rag-studio:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/design-rag-studio/target/design-rag-studio-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8082"
-      DESIGN_RAG_API_KEY: ${DESIGN_RAG_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
-
-  quality-gate:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/quality-gate/target/quality-gate-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8083"
-      QUALITY_GATE_API_KEY: ${QUALITY_GATE_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
-
-  spec-orchestrator:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/spec-orchestrator/target/spec-orchestrator-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8084"
-      SPEC_ORCH_API_KEY: ${SPEC_ORCH_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
-
-  agent-observability:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/agent-observability/target/agent-observability-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8085"
-      OBSERVABILITY_API_KEY: ${OBSERVABILITY_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
-
-  mcp-broker:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/mcp-broker/target/mcp-broker-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8086"
-      MCP_BROKER_API_KEY: ${MCP_BROKER_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
-
-  app-factory:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/app-factory/target/app-factory-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8087"
-      APP_FACTORY_API_KEY: ${APP_FACTORY_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
-
-  paper-algorithm-lab:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/paper-algorithm-lab/target/paper-algorithm-lab-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8088"
-      PAPER_LAB_API_KEY: ${PAPER_LAB_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
-
-  system-architect:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/system-architect/target/system-architect-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8089"
-      ARCHITECT_API_KEY: ${ARCHITECT_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
-
-
-  multimodal-support-desk:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/multimodal-support-desk/target/multimodal-support-desk-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8091"
-      MULTIMODAL_DESK_API_KEY: ${MULTIMODAL_DESK_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
-
-  kotlin-rag-microservice:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/kotlin-rag-microservice/target/kotlin-rag-microservice-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8092"
-      KOTLIN_RAG_API_KEY: ${KOTLIN_RAG_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
-
-  ai-validated-integration-harness:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/ai-validated-integration-harness/target/ai-validated-integration-harness-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8093"
-      AI_HARNESS_API_KEY: ${AI_HARNESS_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
-
-  security-review-assistant:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/security-review-assistant/target/security-review-assistant-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
-    environment:
-      SERVER_PORT: "8094"
-      SECURITY_REVIEW_API_KEY: ${SECURITY_REVIEW_API_KEY:-}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
-
-  # Optional Postgres for design-rag / paper-lab profile=pgvector (no paid key).
   design-rag-db:
     image: postgres:16-alpine
-    profiles: ["pgvector"]
+    profiles: ["postgres", "prod"]
     environment:
       POSTGRES_DB: design
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: design
     ports:
       - "5433:5432"
     networks:
       - agentic-network
 
-  # Sole agent ingress on host :8080. Path aliases + /svc/<app>/** prefixes; GATEWAY_DOWNSTREAM_URL is fallback.
+  paper-lab-db:
+    image: postgres:16-alpine
+    profiles: ["postgres", "prod"]
+    environment:
+      POSTGRES_DB: papers
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: papers
+    networks:
+      - agentic-network
+
+  yagni-copilot:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/yagni-copilot/target/yagni-copilot-1.0.0-SNAPSHOT.jar
+    image: portfolio/yagni-copilot:local
+    environment:
+      SERVER_PORT: "8081"
+      YAGNI_API_KEY: ${YAGNI_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+    networks:
+      - agentic-network
+
+  design-rag-studio:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/design-rag-studio/target/design-rag-studio-1.0.0-SNAPSHOT.jar
+    image: portfolio/design-rag-studio:local
+    environment:
+      SERVER_PORT: "8082"
+      DESIGN_RAG_API_KEY: ${DESIGN_RAG_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+      SPRING_PROFILES_ACTIVE: ${DESIGN_RAG_SPRING_PROFILES:-}
+      DESIGN_RAG_JDBC_URL: ${DESIGN_RAG_JDBC_URL:-}
+      DESIGN_RAG_JDBC_USER: ${DESIGN_RAG_JDBC_USER:-postgres}
+      DESIGN_RAG_JDBC_PASSWORD: ${DESIGN_RAG_JDBC_PASSWORD:-design}
+    networks:
+      - agentic-network
+
+  quality-gate:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/quality-gate/target/quality-gate-1.0.0-SNAPSHOT.jar
+    image: portfolio/quality-gate:local
+    environment:
+      SERVER_PORT: "8083"
+      QUALITY_GATE_API_KEY: ${QUALITY_GATE_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+    networks:
+      - agentic-network
+
+  spec-orchestrator:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/spec-orchestrator/target/spec-orchestrator-1.0.0-SNAPSHOT.jar
+    image: portfolio/spec-orchestrator:local
+    environment:
+      SERVER_PORT: "8084"
+      SPEC_ORCH_API_KEY: ${SPEC_ORCH_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+    networks:
+      - agentic-network
+
+  agent-observability:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/agent-observability/target/agent-observability-1.0.0-SNAPSHOT.jar
+    image: portfolio/agent-observability:local
+    environment:
+      SERVER_PORT: "8085"
+      OBSERVABILITY_API_KEY: ${OBSERVABILITY_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+    networks:
+      - agentic-network
+
+  mcp-broker:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/mcp-broker/target/mcp-broker-1.0.0-SNAPSHOT.jar
+    image: portfolio/mcp-broker:local
+    environment:
+      SERVER_PORT: "8086"
+      MCP_BROKER_API_KEY: ${MCP_BROKER_API_KEY:-}
+      MCP_REMOTE_URL: ${MCP_REMOTE_URL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+    networks:
+      - agentic-network
+
+  app-factory:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/app-factory/target/app-factory-1.0.0-SNAPSHOT.jar
+    image: portfolio/app-factory:local
+    environment:
+      SERVER_PORT: "8087"
+      APP_FACTORY_API_KEY: ${APP_FACTORY_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+    networks:
+      - agentic-network
+
+  paper-algorithm-lab:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/paper-algorithm-lab/target/paper-algorithm-lab-1.0.0-SNAPSHOT.jar
+    image: portfolio/paper-algorithm-lab:local
+    environment:
+      SERVER_PORT: "8088"
+      PAPER_LAB_API_KEY: ${PAPER_LAB_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+      SPRING_PROFILES_ACTIVE: ${PAPER_LAB_SPRING_PROFILES:-}
+      PAPER_LAB_JDBC_URL: ${PAPER_LAB_JDBC_URL:-}
+      PAPER_LAB_JDBC_USER: ${PAPER_LAB_JDBC_USER:-postgres}
+      PAPER_LAB_JDBC_PASSWORD: ${PAPER_LAB_JDBC_PASSWORD:-papers}
+    networks:
+      - agentic-network
+
+  system-architect:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/system-architect/target/system-architect-1.0.0-SNAPSHOT.jar
+    image: portfolio/system-architect:local
+    environment:
+      SERVER_PORT: "8089"
+      ARCHITECT_API_KEY: ${ARCHITECT_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+    networks:
+      - agentic-network
+
+  multimodal-support-desk:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/multimodal-support-desk/target/multimodal-support-desk-1.0.0-SNAPSHOT.jar
+    image: portfolio/multimodal-support-desk:local
+    environment:
+      SERVER_PORT: "8091"
+      MULTIMODAL_DESK_API_KEY: ${MULTIMODAL_DESK_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+    networks:
+      - agentic-network
+
+  kotlin-rag-microservice:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/kotlin-rag-microservice/target/kotlin-rag-microservice-1.0.0-SNAPSHOT.jar
+    image: portfolio/kotlin-rag-microservice:local
+    environment:
+      SERVER_PORT: "8092"
+      KOTLIN_RAG_API_KEY: ${KOTLIN_RAG_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+    networks:
+      - agentic-network
+
+  ai-validated-integration-harness:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/ai-validated-integration-harness/target/ai-validated-integration-harness-1.0.0-SNAPSHOT.jar
+    image: portfolio/ai-validated-integration-harness:local
+    environment:
+      SERVER_PORT: "8093"
+      AI_HARNESS_API_KEY: ${AI_HARNESS_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+    networks:
+      - agentic-network
+
+  security-review-assistant:
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/security-review-assistant/target/security-review-assistant-1.0.0-SNAPSHOT.jar
+    image: portfolio/security-review-assistant:local
+    environment:
+      SERVER_PORT: "8094"
+      SECURITY_REVIEW_API_KEY: ${SECURITY_REVIEW_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SPRING_AI_MODEL_CHAT: ${SPRING_AI_MODEL_CHAT:-none}
+    networks:
+      - agentic-network
+
   ai-edge-gateway:
-    image: eclipse-temurin:21-jre
-    working_dir: /app
-    volumes:
-      - ../../apps/ai-edge-gateway/target/ai-edge-gateway-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    build:
+      <<: *app-build
+      args:
+        JAR_FILE: apps/ai-edge-gateway/target/ai-edge-gateway-1.0.0-SNAPSHOT.jar
+    image: portfolio/ai-edge-gateway:local
     ports:
       - "8080:8080"
     environment:
       SERVER_PORT: "8080"
       GATEWAY_SECURITY_APIKEY: ${GATEWAY_SECURITY_APIKEY:?Set GATEWAY_SECURITY_APIKEY in the environment — no demo default}
       GATEWAY_DOWNSTREAM_URL: ${GATEWAY_DOWNSTREAM_URL:-http://yagni-copilot:8081}
-    command: ["java", "-jar", "/app/app.jar"]
-    networks:
-      - agentic-network
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      OIDC_ISSUER_URI: ${OIDC_ISSUER_URI:-}
+      GATEWAY_URL_YAGNI: http://yagni-copilot:8081
+      GATEWAY_URL_DESIGN_RAG: http://design-rag-studio:8082
+      GATEWAY_URL_QUALITY_GATE: http://quality-gate:8083
+      GATEWAY_URL_SPEC_ORCH: http://spec-orchestrator:8084
+      GATEWAY_URL_OBSERVABILITY: http://agent-observability:8085
+      GATEWAY_URL_MCP_BROKER: http://mcp-broker:8086
+      GATEWAY_URL_APP_FACTORY: http://app-factory:8087
+      GATEWAY_URL_PAPER_LAB: http://paper-algorithm-lab:8088
+      GATEWAY_URL_ARCHITECT: http://system-architect:8089
+      GATEWAY_URL_MULTIMODAL: http://multimodal-support-desk:8091
+      GATEWAY_URL_KOTLIN_RAG: http://kotlin-rag-microservice:8092
+      GATEWAY_URL_HARNESS: http://ai-validated-integration-harness:8093
+      GATEWAY_URL_SECURITY_REVIEW: http://security-review-assistant:8094
     depends_on:
+      - redis
       - yagni-copilot
       - design-rag-studio
       - quality-gate
@@ -202,6 +268,21 @@ services:
       - kotlin-rag-microservice
       - ai-validated-integration-harness
       - security-review-assistant
+    networks:
+      - agentic-network
+
+  tls-proxy:
+    image: nginx:1.27-alpine
+    profiles: ["tls"]
+    ports:
+      - "8443:8443"
+    volumes:
+      - ./tls/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../certs:/etc/certs:ro
+    depends_on:
+      - ai-edge-gateway
+    networks:
+      - agentic-network
 
   prometheus:
     image: prom/prometheus:v2.53.0
@@ -225,7 +306,6 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in the environment — no demo default}
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
-      # File bind for provider YAML so dashboards JSON can mount beside it (nested dir under :ro fails on Docker Desktop).
       - ../monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
       - ../monitoring/grafana/provisioning/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
       - ../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro

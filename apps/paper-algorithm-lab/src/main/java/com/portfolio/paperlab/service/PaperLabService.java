@@ -1,5 +1,6 @@
 package com.portfolio.paperlab.service;
 
+import com.portfolio.shared.ai.PortfolioAiClient;
 import jakarta.annotation.PostConstruct;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,10 +16,12 @@ import java.util.Map;
 public class PaperLabService {
     private final JdbcTemplate jdbc;
     private final Environment environment;
+    private final PortfolioAiClient portfolioAiClient;
 
-    public PaperLabService(JdbcTemplate jdbc, Environment environment) {
+    public PaperLabService(JdbcTemplate jdbc, Environment environment, PortfolioAiClient portfolioAiClient) {
         this.jdbc = jdbc;
         this.environment = environment;
+        this.portfolioAiClient = portfolioAiClient;
     }
 
     @PostConstruct
@@ -86,6 +89,7 @@ public class PaperLabService {
         out.put("java", javaCode);
         out.put("tests", testCode);
         out.put("citations", citationList);
+        out.put("aiDelta", portfolioAiClient.assist("delta-text", topic.strip()));
         return out;
     }
 

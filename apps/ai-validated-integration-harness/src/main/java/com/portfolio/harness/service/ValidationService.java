@@ -1,5 +1,6 @@
 package com.portfolio.harness.service;
 
+import com.portfolio.shared.ai.PortfolioAiClient;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,6 +11,12 @@ import java.util.Map;
 
 @Service
 public class ValidationService {
+
+    private final PortfolioAiClient portfolioAiClient;
+
+    public ValidationService(PortfolioAiClient portfolioAiClient) {
+        this.portfolioAiClient = portfolioAiClient;
+    }
 
     public Map<String, Object> handle(Map<String, Object> body) {
         String contract = str(body, "contract");
@@ -22,6 +29,7 @@ public class ValidationService {
         out.put("mode", "offline");
         out.put("verdict", pass ? "PASS" : "FAIL");
         out.put("reason", pass ? "Observed payload matches contract token" : "Observed payload missing contract token");
+        out.put("aiNote", portfolioAiClient.assist("validation-note", contract + " | " + observed));
         return out;
     }
 

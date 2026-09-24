@@ -1,50 +1,56 @@
 # AI edge gateway design
 
-P10 — Enterprise AI Edge Platform (gateway + policy). Small working gateway first; full multi-app routing and mTLS come later.
+Portfolio edge entry on Spring Boot 4.1.1 and Spring Cloud Gateway (WebFlux). Authenticates callers, rate-limits by client IP, and routes each portfolio app on a unique path or a `/svc/<app>/` prefix. There is no catch-all `/api/**` route for ambiguous `/api/v1/generate` or `/api/v1/ingest`.
 
 ## Goal
 
-Ship a Spring Cloud Gateway edge that authenticates with an API key from the environment, applies a simple in-memory rate limit, exposes actuator health without skill/plugin brand names, and can route to one downstream stub URL.
+Provide one HTTP front door for demo and stress runs: API key auth (optional OIDC JWT), Redis-backed or in-memory rate limits, actuator health without skill branding, and deterministic routing to P1–P14 backends.
 
-## In scope
+## Routing
 
-- Java 21 + Spring Boot 3.3.3 (parent BOM) + Spring Cloud Gateway
-- API key auth via `X-API-Key` or `Authorization: Bearer <same key>`
-- Reject JWT-looking `ey*` Bearer tokens and the string `valid-test-token` unless they equal the configured key (they must not)
-- In-memory token-bucket rate limit per client IP
-- `/actuator/health` and `/fallback/**` without auth
-- One catch-all route to a configurable backend URL
-- Unit tests for auth bypass rejection and rate limit
-- `.env.example` only (no real secrets)
+Two patterns coexist:
 
-## Out of scope
+1. **Unique aliases** under `/api/v1/...` for well-known operations (patch, gate, runs, query, validate, review, and app-scoped generate/ingest).
+2. **Service prefixes** `/svc/<app-name>/**` with rewrite to the downstream path (full app API surface).
 
-- Spring AI / ChatClient on the edge
-- Redis rate limiter, OAuth2/OIDC IdP, mTLS
-- Full P1–P9 route table
-- Cloud or production deploy
-- Parent Boot upgrade to 4.x
+Generate and ingest are never exposed as bare `/api/v1/generate` or `/api/v1/ingest`. Use:
 
-## Acceptance criteria
+| Gateway path | Downstream |
+|---|---|
+| `/api/v1/design-rag/ingest` | design-rag-studio `/api/v1/ingest` |
+| `/api/v1/design-rag/generate` | design-rag-studio `/api/v1/generate` |
+| `/api/v1/app-factory/generate` | app-factory `/api/v1/generate` |
+| `/api/v1/kotlin-rag/ingest` | kotlin-rag-microservice `/api/v1/ingest` |
 
-1. Module builds with `mvn -pl apps/ai-edge-gateway -am -DskipTests package`
-2. Missing or wrong API key → 401 on protected paths
-3. Bearer `ey…` and Bearer `valid-test-token` → 401 when not the configured key
-4. Valid configured key → filter chain continues
-5. Rate limit exhausted → 429 with `Retry-After`
-6. Health returns UP and body has no skill/plugin brand strings
-7. API key comes from env (`GATEWAY_SECURITY_APIKEY` / `GATEWAY_API_KEY`); empty key fails startup
+Backend base URLs come from `GATEWAY_URL_*` environment variables (see `application.yml`).
 
-## Stack pin
+## Authentication
+
+Default: shared API key from `GATEWAY_SECURITY_APIKEY` or `GATEWAY_API_KEY`, sent as `X-API-Key` or `Authorization: Bearer <same key>`.
+
+Optional OIDC: when `OIDC_ISSUER_URI` / `gateway.security.oidcIssuerUri` is non-empty, Bearer JWTs validated with `NimbusJwtDecoder` against that issuer are accepted (`X-Authenticated-User: oidc-client`). API key behavior is unchanged. Invalid JWT falls through; missing or invalid credentials return 401. Without OIDC, `ey*` and `valid-test-token` Bearer values are rejected unless they equal the configured API key.
+
+`/actuator/**` and `/fallback/**` skip auth.
+
+## Rate limiting
+
+Per client IP on all other paths. Settings under `gateway.rateLimiter`:
+
+- `replenishRate` and `burstCapacity` drive the in-memory token bucket when Redis is off.
+- When `REDIS_URL` / `gateway.rateLimiter.redisUrl` is set, limits use a Redis fixed-window counter (INCR + TTL) with `burstCapacity` requests per second per client key.
+
+429 responses include `Retry-After: 1`.
+
+## Stack
 
 | Item | Choice |
 |---|---|
 | Java | 21 |
-| Boot | 3.3.3 (parent; keeps `libs/shared` safe) |
-| Spring Cloud | 2023.0.3 (parent BOM) |
-| Gateway | `spring-cloud-starter-gateway` |
-| Reactor | on parent reactor as `apps/ai-edge-gateway` |
-| Spring AI | none on this app |
+| Boot | 4.1.1 (parent BOM) |
+| Spring Cloud | 2025.1.x (parent BOM) |
+| Gateway | `spring-cloud-starter-gateway-server-webflux` |
+| Rate limit store | In-memory or Lettuce Redis |
+| Optional auth | OAuth2 resource server (JWT decoder only) |
 
 ## Module layout
 
@@ -52,9 +58,20 @@ Ship a Spring Cloud Gateway edge that authenticates with an API key from the env
 apps/ai-edge-gateway/
   pom.xml
   DESIGN.md
-  SECURITY.md
-  IMPROVEMENT.md
-  .env.example
-  src/main/java/...
+  src/main/java/com/portfolio/edge/
+    filter/
+    ratelimit/
+    config/
+  src/main/resources/application.yml
   src/test/java/...
 ```
+
+## Out of scope
+
+- Spring AI on the edge
+- mTLS and full production IdP wiring in-repo
+- Cloud deploy definitions in this module
+
+## Tests
+
+`AiEdgeGatewayApplicationTest` covers health bypass, auth rejection for missing key and fake JWT/test tokens, valid API key, and in-memory rate limit via `new RateLimitingGatewayFilterFactory(0, 2)`.

@@ -1,6 +1,8 @@
 package com.portfolio.edge.filter;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.portfolio.edge.ratelimit.InMemoryRateLimitBucketStore;
+import com.portfolio.edge.ratelimit.RateLimitBucketStore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -12,25 +14,23 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Component
 public class RateLimitingGatewayFilterFactory extends AbstractGatewayFilterFactory<RateLimitingGatewayFilterFactory.Config> {
 
-    private static final int MAX_BUCKETS = 10_000;
+    private final RateLimitBucketStore bucketStore;
 
-    private final int replenishRate;
-    private final int burstCapacity;
-    private final ConcurrentHashMap<String, TokenBucket> buckets = new ConcurrentHashMap<>();
-
-    public RateLimitingGatewayFilterFactory(
-            @Value("${gateway.rateLimiter.replenishRate:100}") int replenishRate,
-            @Value("${gateway.rateLimiter.burstCapacity:200}") int burstCapacity) {
+    @Autowired
+    public RateLimitingGatewayFilterFactory(RateLimitBucketStore bucketStore) {
         super(Config.class);
-        this.replenishRate = replenishRate;
-        this.burstCapacity = burstCapacity;
+        this.bucketStore = bucketStore;
+    }
+
+    /**
+     * Unit tests: in-memory token bucket with explicit rates (ignores Redis).
+     */
+    public RateLimitingGatewayFilterFactory(int replenishRate, int burstCapacity) {
+        this(new InMemoryRateLimitBucketStore(replenishRate, burstCapacity));
     }
 
     @Override
@@ -45,12 +45,7 @@ public class RateLimitingGatewayFilterFactory extends AbstractGatewayFilterFacto
                     ? exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()
                     : "default-client";
 
-            if (buckets.size() > MAX_BUCKETS) {
-                buckets.clear();
-            }
-
-            TokenBucket bucket = buckets.computeIfAbsent(clientIp, k -> new TokenBucket(burstCapacity, replenishRate));
-            if (!bucket.tryConsume()) {
+            if (!bucketStore.tryConsume(clientIp)) {
                 return onRateLimitExceeded(exchange);
             }
             return chain.filter(exchange);
@@ -70,39 +65,5 @@ public class RateLimitingGatewayFilterFactory extends AbstractGatewayFilterFacto
     }
 
     public static class Config {
-    }
-
-    private static final class TokenBucket {
-        private final int capacity;
-        private final int refillRatePerSecond;
-        private final AtomicInteger tokens;
-        private final AtomicLong lastRefillTimestamp;
-
-        TokenBucket(int capacity, int refillRatePerSecond) {
-            this.capacity = capacity;
-            this.refillRatePerSecond = refillRatePerSecond;
-            this.tokens = new AtomicInteger(capacity);
-            this.lastRefillTimestamp = new AtomicLong(System.currentTimeMillis());
-        }
-
-        synchronized boolean tryConsume() {
-            refill();
-            if (tokens.get() > 0) {
-                tokens.decrementAndGet();
-                return true;
-            }
-            return false;
-        }
-
-        private void refill() {
-            long now = System.currentTimeMillis();
-            long last = lastRefillTimestamp.get();
-            long elapsedSeconds = (now - last) / 1000;
-            if (elapsedSeconds > 0) {
-                int refill = (int) Math.min(Integer.MAX_VALUE, elapsedSeconds * (long) refillRatePerSecond);
-                tokens.updateAndGet(current -> Math.min(capacity, current + refill));
-                lastRefillTimestamp.set(now);
-            }
-        }
     }
 }

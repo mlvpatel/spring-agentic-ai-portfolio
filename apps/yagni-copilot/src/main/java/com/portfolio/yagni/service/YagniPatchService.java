@@ -13,6 +13,7 @@ import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.IfStmt;
 import com.github.javaparser.ast.stmt.SwitchEntry;
 import com.github.javaparser.ast.stmt.WhileStmt;
+import com.portfolio.shared.ai.PortfolioAiClient;
 import com.portfolio.yagni.dto.PatchRequest;
 import com.portfolio.yagni.dto.PatchResponse;
 import org.springframework.stereotype.Service;
@@ -25,10 +26,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class YagniPatchService {
 
     private final JavaParser javaParser;
-    public YagniPatchService() {
+    private final PortfolioAiClient portfolioAiClient;
+
+    public YagniPatchService(PortfolioAiClient portfolioAiClient) {
         ParserConfiguration config = new ParserConfiguration();
         config.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21);
         this.javaParser = new JavaParser(config);
+        this.portfolioAiClient = portfolioAiClient;
     }
 
     public PatchResponse propose(PatchRequest request) {
@@ -46,6 +50,7 @@ public class YagniPatchService {
         if (metrics.astDepth() > 8) {
             notes.add("AST depth " + metrics.astDepth() + " is deep; prefer early returns.");
         }
+        notes.add(portfolioAiClient.assist("patch-explanation", request.changeRequest() + "\n" + source));
         String patch = buildPatch(request.changeRequest(), source, within);
         return new PatchResponse(
                 resolveMode(),
@@ -60,7 +65,7 @@ public class YagniPatchService {
     }
 
     private String resolveMode() {
-        // Offline-only — no ChatClient. Paid model keys are never required for tests.
+        // Default offline; live ChatClient only when OPENAI_API_KEY + ChatModel are present.
         return "offline";
     }
 

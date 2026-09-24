@@ -1,5 +1,6 @@
 package com.portfolio.specorch.service;
 
+import com.portfolio.shared.ai.PortfolioAiClient;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -13,6 +14,11 @@ import java.util.concurrent.atomic.AtomicLong;
 public class RunStore {
     private final AtomicLong seq = new AtomicLong();
     private final ConcurrentHashMap<String, Map<String, Object>> runs = new ConcurrentHashMap<>();
+    private final PortfolioAiClient aiClient;
+
+    public RunStore(PortfolioAiClient aiClient) {
+        this.aiClient = aiClient;
+    }
 
     public Map<String, Object> create(String brief) {
         if (brief == null || brief.isBlank()) {
@@ -32,6 +38,7 @@ public class RunStore {
         run.put("mode", "offline");
         run.put("createdAt", Instant.now().toString());
         run.put("artifacts", artifacts);
+        run.put("planText", aiClient.assist("plan-text", brief.strip()));
         runs.put(id, run);
         return run;
     }

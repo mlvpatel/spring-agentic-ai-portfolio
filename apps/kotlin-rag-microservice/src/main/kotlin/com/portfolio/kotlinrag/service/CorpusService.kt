@@ -1,10 +1,13 @@
 package com.portfolio.kotlinrag.service
 
+import com.portfolio.shared.ai.PortfolioAiClient
 import org.springframework.stereotype.Service
 import java.util.concurrent.CopyOnWriteArrayList
 
 @Service
-class CorpusService {
+class CorpusService(
+    private val portfolioAiClient: PortfolioAiClient,
+) {
     private val docs = CopyOnWriteArrayList<Pair<String, String>>()
 
     fun ingest(title: String, text: String): Map<String, Any> {
@@ -36,6 +39,12 @@ class CorpusService {
         val resolved = hits.ifEmpty {
             docs.take(1).map { (t, body) -> mapOf("title" to t, "snippet" to body.take(120)) }
         }
-        return mapOf("mode" to "offline", "q" to q.trim(), "hits" to resolved, "refused" to false)
+        return mapOf(
+            "mode" to "offline",
+            "q" to q.trim(),
+            "hits" to resolved,
+            "refused" to false,
+            "aiNote" to portfolioAiClient.assist("query-note", q.trim()),
+        )
     }
 }

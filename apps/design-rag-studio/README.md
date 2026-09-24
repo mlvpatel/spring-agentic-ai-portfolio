@@ -24,6 +24,8 @@ C4Container
 
 ## Run
 
+Live LLM calls use shared `PortfolioAiClient` (offline by default; Spring AI ChatClient only with `OPENAI_API_KEY` and `SPRING_AI_MODEL_CHAT=openai`).
+
 Through the compose gateway (preferred):
 
 ```bash

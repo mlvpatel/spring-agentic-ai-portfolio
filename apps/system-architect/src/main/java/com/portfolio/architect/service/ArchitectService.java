@@ -1,12 +1,20 @@
 package com.portfolio.architect.service;
 
+import com.portfolio.shared.ai.PortfolioAiClient;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class ArchitectService {
+    private final PortfolioAiClient portfolioAiClient;
+
+    public ArchitectService(PortfolioAiClient portfolioAiClient) {
+        this.portfolioAiClient = portfolioAiClient;
+    }
+
     private static final List<String> CORPUS = List.of(
             "Prefer clear service boundaries over shared mutable databases.",
             "Start with vertical slice; add cache only after measured latency need.",
@@ -41,13 +49,15 @@ public class ArchitectService {
                 "scalability", CORPUS.get(1),
                 "cost", "Defer managed queue until backlog > 1k msgs"
         );
-        return Map.of(
-                "mode", "offline",
-                "requirements", req,
-                "c4Mermaid", mermaid,
-                "adr", adr,
-                "capacity", capacity,
-                "parallelReviews", workers,
-                "corpusHits", CORPUS);
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("mode", "offline");
+        out.put("requirements", req);
+        out.put("c4Mermaid", mermaid);
+        out.put("adr", adr);
+        out.put("capacity", capacity);
+        out.put("parallelReviews", workers);
+        out.put("corpusHits", CORPUS);
+        out.put("aiAdrNote", portfolioAiClient.assist("adr-prose", req));
+        return out;
     }
 }

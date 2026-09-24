@@ -1,5 +1,6 @@
 package com.portfolio.appfactory.service;
 
+import com.portfolio.shared.ai.PortfolioAiClient;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -11,6 +12,12 @@ import java.util.Map;
 
 @Service
 public class BlueprintFactory {
+    private final PortfolioAiClient portfolioAiClient;
+
+    public BlueprintFactory(PortfolioAiClient portfolioAiClient) {
+        this.portfolioAiClient = portfolioAiClient;
+    }
+
     private static final Map<String, String> BLUEPRINTS = Map.of(
             "crud-api", "Minimal Spring Web CRUD API",
             "rag-chatbot", "Offline RAG chatbot skeleton",
@@ -38,11 +45,13 @@ public class BlueprintFactory {
         files.put("src/main/resources/application.yml", "spring:\n  application:\n    name: " + safe + "\n");
         files.put("README.md", "# " + safe + "\n\nGenerated from blueprint " + blueprintId + " (offline).\n");
         files.put("docker-compose.yml", "services:\n  app:\n    image: eclipse-temurin:21-jre\n");
-        return Map.of(
-                "mode", "offline",
-                "blueprint", blueprintId,
-                "appName", safe,
-                "files", files,
-                "note", "Structure only; no live ChatClient generation.");
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("mode", "offline");
+        out.put("blueprint", blueprintId);
+        out.put("appName", safe);
+        out.put("files", files);
+        out.put("note", "Structure only; no live ChatClient generation.");
+        out.put("aiNote", portfolioAiClient.assist("blueprint-note", blueprintId + " " + safe));
+        return out;
     }
 }

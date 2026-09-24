@@ -2,6 +2,11 @@ server:
   port: 8089
 
 spring:
+  ai:
+    model:
+      chat: ${SPRING_AI_MODEL_CHAT:none}
+    openai:
+      api-key: ${OPENAI_API_KEY:}
   application:
     name: system-architect
 

@@ -2,6 +2,11 @@
 
 Maven artifact `com.portfolio:shared-lib` at `libs/shared/`.
 
-Holds cross-cutting Servlet MVC helpers (`ApiError`, `GlobalExceptionHandler`, auto-config). No API keys, no default Bearer bypasses.
+Cross-cutting pieces for the Servlet apps:
 
-Parent POM: repo root. Legacy agent modules that still depend on this artifact live under `archive/legacy-portfolio/` and are not on the live reactor.
+- `ApiError` / `GlobalExceptionHandler` (auto-config)
+- `PortfolioAiClient` (offline by default; uses Spring AI `ChatClient` only when a `ChatModel` bean exists and `OPENAI_API_KEY` is set)
+
+No API keys in this module. No default Bearer bypasses.
+
+Parent POM: repo root. Legacy modules under `archive/legacy-portfolio/` are off the live reactor.

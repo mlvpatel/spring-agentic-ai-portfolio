@@ -3,5 +3,10 @@ app:
     api-key: test-yagni-api-key-for-unit-tests-only
 
 spring:
+  ai:
+    model:
+      chat: ${SPRING_AI_MODEL_CHAT:none}
+    openai:
+      api-key: ${OPENAI_API_KEY:}
   main:
     banner-mode: "off"

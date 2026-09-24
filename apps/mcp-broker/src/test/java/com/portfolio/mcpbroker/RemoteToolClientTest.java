@@ -2,7 +2,10 @@ package com.portfolio.mcpbroker;
 
 import com.portfolio.mcpbroker.service.RemoteToolClient;
 import com.portfolio.mcpbroker.service.ToolCatalog;
+import com.portfolio.shared.ai.PortfolioAiClient;
 import com.sun.net.httpserver.HttpServer;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.core.env.StandardEnvironment;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,7 +52,12 @@ class RemoteToolClientTest {
     @DisplayName("Live HTTP invoke hits local stub without paid API key")
     void liveHttpInvoke() {
         RemoteToolClient client = new RemoteToolClient(url);
-        ToolCatalog catalog = new ToolCatalog(client);
+        @SuppressWarnings("unchecked")
+        ObjectProvider<org.springframework.ai.chat.model.ChatModel> chatModels =
+                org.mockito.Mockito.mock(ObjectProvider.class);
+        org.mockito.Mockito.when(chatModels.getIfAvailable()).thenReturn(null);
+        PortfolioAiClient ai = new PortfolioAiClient(chatModels, new StandardEnvironment());
+        ToolCatalog catalog = new ToolCatalog(client, ai);
         catalog.register("ping", "local", Map.of());
         Map<String, Object> result = catalog.invoke("ping", Map.of("x", 1));
         assertThat(result.get("mode")).isEqualTo("live-http");

@@ -1,5 +1,6 @@
 package com.portfolio.observability.service;
 
+import com.portfolio.shared.ai.PortfolioAiClient;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -14,6 +15,11 @@ import java.util.stream.Collectors;
 @Component
 public class TrajectoryStore {
     private final CopyOnWriteArrayList<Map<String, Object>> trajectories = new CopyOnWriteArrayList<>();
+    private final PortfolioAiClient aiClient;
+
+    public TrajectoryStore(PortfolioAiClient aiClient) {
+        this.aiClient = aiClient;
+    }
 
     public Map<String, Object> record(String prompt, String tool, String outcome) {
         if (prompt == null || prompt.isBlank()) {
@@ -50,11 +56,13 @@ public class TrajectoryStore {
         if (proposals.isEmpty()) {
             proposals.add("No failure clusters; keep current prompts.");
         }
-        return Map.of(
-                "mode", "offline",
-                "total", trajectories.size(),
-                "failures", failed.size(),
-                "clusters", byTool,
-                "skillDeltas", proposals);
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("mode", "offline");
+        out.put("total", trajectories.size());
+        out.put("failures", failed.size());
+        out.put("clusters", byTool);
+        out.put("skillDeltas", proposals);
+        out.put("deltaText", aiClient.assist("delta-text", "failures=" + failed.size() + " proposals=" + proposals));
+        return out;
     }
 }

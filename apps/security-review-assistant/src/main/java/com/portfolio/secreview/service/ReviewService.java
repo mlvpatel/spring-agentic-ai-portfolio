@@ -1,5 +1,6 @@
 package com.portfolio.secreview.service;
 
+import com.portfolio.shared.ai.PortfolioAiClient;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,6 +11,12 @@ import java.util.Map;
 
 @Service
 public class ReviewService {
+
+    private final PortfolioAiClient portfolioAiClient;
+
+    public ReviewService(PortfolioAiClient portfolioAiClient) {
+        this.portfolioAiClient = portfolioAiClient;
+    }
 
     public Map<String, Object> handle(Map<String, Object> body) {
         String scope = str(body, "scope");
@@ -34,6 +41,7 @@ public class ReviewService {
         out.put("findings", findings);
         out.put("status", findings.isEmpty() ? "clean" : "needs-review");
         out.put("note", "Authorized checklist review only; no offensive tooling.");
+        out.put("aiNote", portfolioAiClient.assist("review-note", scope + " " + artifact));
         return out;
     }
 

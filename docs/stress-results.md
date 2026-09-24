@@ -35,6 +35,6 @@ Not a certified benchmark.
 
 ## Still open
 
-- `/api/v1/generate` and `/api/v1/ingest` remain ambiguous across apps; use `/svc/<app>/...` for those.
+- Generate and ingest use unique gateway paths: `/api/v1/design-rag/*`, `/api/v1/app-factory/generate`, `/api/v1/kotlin-rag/ingest`, or full app APIs under `/svc/<app>/...`.
 - No cloud deploy in this workspace.
 

@@ -1,0 +1,109 @@
+# Jar-mount profile for fast local iteration (use with docker-compose.yml).
+# Example:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env up -d
+
+services:
+  yagni-copilot:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/yagni-copilot/target/yagni-copilot-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+  design-rag-studio:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/design-rag-studio/target/design-rag-studio-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      DESIGN_RAG_SPRING_PROFILES: ""
+      DESIGN_RAG_JDBC_URL: ""
+    command: ["java", "-jar", "/app/app.jar"]
+  quality-gate:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/quality-gate/target/quality-gate-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+  spec-orchestrator:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/spec-orchestrator/target/spec-orchestrator-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+  agent-observability:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/agent-observability/target/agent-observability-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+  mcp-broker:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/mcp-broker/target/mcp-broker-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+  app-factory:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/app-factory/target/app-factory-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+  paper-algorithm-lab:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/paper-algorithm-lab/target/paper-algorithm-lab-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    environment:
+      PAPER_LAB_SPRING_PROFILES: ""
+      PAPER_LAB_JDBC_URL: ""
+    command: ["java", "-jar", "/app/app.jar"]
+  system-architect:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/system-architect/target/system-architect-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+  multimodal-support-desk:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/multimodal-support-desk/target/multimodal-support-desk-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+  kotlin-rag-microservice:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/kotlin-rag-microservice/target/kotlin-rag-microservice-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+  ai-validated-integration-harness:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/ai-validated-integration-harness/target/ai-validated-integration-harness-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+  security-review-assistant:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/security-review-assistant/target/security-review-assistant-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]
+  ai-edge-gateway:
+    image: eclipse-temurin:21-jre
+    build: null
+    working_dir: /app
+    volumes:
+      - ../../apps/ai-edge-gateway/target/ai-edge-gateway-1.0.0-SNAPSHOT.jar:/app/app.jar:ro
+    command: ["java", "-jar", "/app/app.jar"]

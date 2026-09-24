@@ -8,6 +8,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
@@ -16,21 +19,28 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Edge API-key filter. Accepts only the configured key via X-API-Key or Bearer.
- * Does not treat JWT-looking {@code ey*} tokens or {@code valid-test-token} as bypasses.
+ * Edge API-key filter. Accepts the configured key via X-API-Key or Bearer.
+ * When {@code gateway.security.oidcIssuerUri} is set, also accepts Bearer JWTs from that issuer.
+ * Does not treat JWT-looking {@code ey*} tokens or {@code valid-test-token} as bypasses unless OIDC validates them.
  */
 @Component
 public class ApiKeyAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<ApiKeyAuthGatewayFilterFactory.Config> {
 
     private final String configuredApiKey;
+    private final JwtDecoder jwtDecoder;
 
-    public ApiKeyAuthGatewayFilterFactory(@Value("${gateway.security.apiKey:}") String configuredApiKey) {
+    public ApiKeyAuthGatewayFilterFactory(
+            @Value("${gateway.security.apiKey:}") String configuredApiKey,
+            @Value("${gateway.security.oidcIssuerUri:}") String oidcIssuerUri) {
         super(Config.class);
         if (!StringUtils.hasText(configuredApiKey)) {
             throw new IllegalStateException(
                     "gateway.security.apiKey must be set (GATEWAY_SECURITY_APIKEY or GATEWAY_API_KEY). Refusing empty secret.");
         }
         this.configuredApiKey = configuredApiKey;
+        this.jwtDecoder = StringUtils.hasText(oidcIssuerUri)
+                ? NimbusJwtDecoder.withIssuerLocation(oidcIssuerUri.trim()).build()
+                : null;
     }
 
     @Override
@@ -56,6 +66,14 @@ public class ApiKeyAuthGatewayFilterFactory extends AbstractGatewayFilterFactory
                 if (token.equals(configuredApiKey)) {
                     authorized = true;
                     principal = "bearer-client";
+                } else if (jwtDecoder != null) {
+                    try {
+                        jwtDecoder.decode(token);
+                        authorized = true;
+                        principal = "oidc-client";
+                    } catch (JwtException ignored) {
+                        // fall through to 401 unless API key matched above
+                    }
                 }
             }
 

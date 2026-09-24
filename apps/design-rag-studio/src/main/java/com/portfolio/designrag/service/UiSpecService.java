@@ -1,5 +1,6 @@
 package com.portfolio.designrag.service;
 
+import com.portfolio.shared.ai.PortfolioAiClient;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -12,10 +13,12 @@ import java.util.Map;
 public class UiSpecService {
     private final DesignCorpus corpus;
     private final Environment environment;
+    private final PortfolioAiClient aiClient;
 
-    public UiSpecService(DesignCorpus corpus, Environment environment) {
+    public UiSpecService(DesignCorpus corpus, Environment environment, PortfolioAiClient aiClient) {
         this.corpus = corpus;
         this.environment = environment;
+        this.aiClient = aiClient;
     }
 
     public Map<String, Object> generate(String stack, String intent) {
@@ -32,15 +35,16 @@ public class UiSpecService {
         for (TokenDoc d : hits) {
             tokens.put(d.name(), Map.of("value", d.value(), "notes", d.notes()));
         }
-        return Map.of(
-                "mode", mode(),
-                "refused", false,
-                "stack", stack,
-                "intent", intent,
-                "tokens", tokens,
-                "layout", Map.of("type", "single-column", "spacing", "token-driven"),
-                "a11y", List.of("color-contrast-from-tokens", "focus-ring", "label-required")
-        );
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("mode", mode());
+        out.put("refused", false);
+        out.put("stack", stack);
+        out.put("intent", intent);
+        out.put("tokens", tokens);
+        out.put("layout", Map.of("type", "single-column", "spacing", "token-driven"));
+        out.put("a11y", List.of("color-contrast-from-tokens", "focus-ring", "label-required"));
+        out.put("aiNote", aiClient.assist("grounded-spec", "stack=" + stack + " intent=" + intent));
+        return out;
     }
 
     private String mode() {

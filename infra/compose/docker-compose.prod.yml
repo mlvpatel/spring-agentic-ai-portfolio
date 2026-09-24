@@ -1,0 +1,21 @@
+# Postgres-backed P2/P8 with profile prod (or postgres). Use with docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile prod up -d --build
+
+services:
+  design-rag-studio:
+    environment:
+      DESIGN_RAG_SPRING_PROFILES: pgvector
+      DESIGN_RAG_JDBC_URL: jdbc:postgresql://design-rag-db:5432/design
+      DESIGN_RAG_JDBC_USER: postgres
+      DESIGN_RAG_JDBC_PASSWORD: design
+    depends_on:
+      - design-rag-db
+
+  paper-algorithm-lab:
+    environment:
+      PAPER_LAB_SPRING_PROFILES: pgvector
+      PAPER_LAB_JDBC_URL: jdbc:postgresql://paper-lab-db:5432/papers
+      PAPER_LAB_JDBC_USER: postgres
+      PAPER_LAB_JDBC_PASSWORD: papers
+    depends_on:
+      - paper-lab-db

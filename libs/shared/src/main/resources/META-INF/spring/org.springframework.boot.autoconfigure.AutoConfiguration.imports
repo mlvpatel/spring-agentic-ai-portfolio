@@ -1,1 +1,2 @@
 com.portfolio.shared.error.SharedErrorAutoConfiguration
+com.portfolio.shared.ai.PortfolioAiAutoConfiguration
