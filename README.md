@@ -106,6 +106,10 @@ Gateway listens on host `:8080`. Stress notes: [docs/stress-results.md](docs/str
 
 Maven tests use H2 for P2/P8. They do not require Postgres, Redis, Docker, or an OpenAI key.
 
+## Contributing
+
+Patches welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for build/test (`./mvnw test`), branch/PR flow, and offline vs live AI notes. Security reports go to [SECURITY.md](./SECURITY.md), not a public issue for live secrets. Conduct: [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
+
 ## License
 
 Apache License 2.0. See [LICENSE](./LICENSE).
