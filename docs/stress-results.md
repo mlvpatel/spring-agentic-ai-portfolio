@@ -1,6 +1,10 @@
 # Stress results
 
-Date: 2026-09-24
+## 2026-09-28 attempt
+
+Docker daemon was not running (`docker info` could not reach the socket). No new latency numbers. Prior sample below is unchanged from 2026-09-24.
+
+## 2026-09-24 sample
 
 Laptop Docker Desktop sample against `ai-edge-gateway` on host port 8080.
 Method: 50 concurrent `curl` requests via `xargs -P 50` (hey/wrk not installed).

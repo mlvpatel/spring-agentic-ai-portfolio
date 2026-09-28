@@ -8,7 +8,7 @@ Run deterministic SAST-style rules on source and return structured PASS/FAIL wit
 
 ## In scope
 
-- Boot 3.3.3 parent; AI BOM 1.0.0-M2 unused by default
+- Boot 4.1.1 parent; Spring AI 2.0.1 (offline default when no API key)
 - POST /api/v1/gate
 - API key auth; offline mode
 
@@ -25,7 +25,7 @@ Run deterministic SAST-style rules on source and return structured PASS/FAIL wit
 
 ## Stack pin
 
-Boot 3.3.3 (AI 2.0 later).
+Boot 4.1.1 + Spring AI 2.0.1.
 
 ## Endpoints
 

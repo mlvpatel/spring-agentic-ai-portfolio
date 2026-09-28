@@ -70,7 +70,6 @@ certs/
 AGENTS.md
 CLAUDE.md
 docs/loop-status.md
-docs/multiagent-sdlc-loop.md
 docs/sdlc-loop-prompt.md
 FOUNDATION-AUDIT.md
 

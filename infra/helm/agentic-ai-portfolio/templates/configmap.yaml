@@ -7,3 +7,19 @@ metadata:
 data:
   SPRING_PROFILES_ACTIVE: {{ .Values.global.springProfile | quote }}
   GATEWAY_DOWNSTREAM_URL: "http://{{ .Values.gatewayDownstreamService }}:{{ .Values.gatewayDownstreamPort }}"
+  GATEWAY_URL_YAGNI: "http://{{ .Values.services.yagniCopilot.name }}:{{ .Values.services.yagniCopilot.port }}"
+  GATEWAY_URL_DESIGN_RAG: "http://{{ .Values.services.designRagStudio.name }}:{{ .Values.services.designRagStudio.port }}"
+  GATEWAY_URL_QUALITY_GATE: "http://{{ .Values.services.qualityGate.name }}:{{ .Values.services.qualityGate.port }}"
+  GATEWAY_URL_SPEC_ORCH: "http://{{ .Values.services.specOrchestrator.name }}:{{ .Values.services.specOrchestrator.port }}"
+  GATEWAY_URL_OBSERVABILITY: "http://{{ .Values.services.agentObservability.name }}:{{ .Values.services.agentObservability.port }}"
+  GATEWAY_URL_MCP_BROKER: "http://{{ .Values.services.mcpBroker.name }}:{{ .Values.services.mcpBroker.port }}"
+  GATEWAY_URL_APP_FACTORY: "http://{{ .Values.services.appFactory.name }}:{{ .Values.services.appFactory.port }}"
+  GATEWAY_URL_PAPER_LAB: "http://{{ .Values.services.paperAlgorithmLab.name }}:{{ .Values.services.paperAlgorithmLab.port }}"
+  GATEWAY_URL_ARCHITECT: "http://{{ .Values.services.systemArchitect.name }}:{{ .Values.services.systemArchitect.port }}"
+  GATEWAY_URL_MULTIMODAL: "http://{{ .Values.services.multimodalSupportDesk.name }}:{{ .Values.services.multimodalSupportDesk.port }}"
+  GATEWAY_URL_KOTLIN_RAG: "http://{{ .Values.services.kotlinRagMicroservice.name }}:{{ .Values.services.kotlinRagMicroservice.port }}"
+  GATEWAY_URL_HARNESS: "http://{{ .Values.services.aiValidatedIntegrationHarness.name }}:{{ .Values.services.aiValidatedIntegrationHarness.port }}"
+  GATEWAY_URL_SECURITY_REVIEW: "http://{{ .Values.services.securityReviewAssistant.name }}:{{ .Values.services.securityReviewAssistant.port }}"
+  {{- if .Values.redisUrl }}
+  REDIS_URL: {{ .Values.redisUrl | quote }}
+  {{- end }}

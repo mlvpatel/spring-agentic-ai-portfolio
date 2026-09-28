@@ -32,6 +32,8 @@ monitoring:
 
 # Required at install time (no chart defaults that look like real keys).
 gatewaySecurityApiKey: ""
+# Optional Redis for gateway rate limiting (empty = in-memory).
+redisUrl: ""
 # Optional per-app API keys (empty allowed for offline paths).
 apiKeys:
   yagni: ""
@@ -43,8 +45,12 @@ apiKeys:
   appFactory: ""
   paperLab: ""
   architect: ""
+  multimodal: ""
+  kotlinRag: ""
+  harness: ""
+  securityReview: ""
 
-# Default single downstream for P10 (full P1–P9 route table is not wired yet).
+# Default single downstream for P10 (per-app GATEWAY_URL_* table is in ConfigMap).
 gatewayDownstreamService: yagni-copilot
 gatewayDownstreamPort: 8081
 
@@ -241,6 +247,98 @@ services:
       repository: system-architect
       tag: 1.0.0-SNAPSHOT
     port: 8089
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  multimodalSupportDesk:
+    name: multimodal-support-desk
+    apiKeyEnv: MULTIMODAL_API_KEY
+    apiKeyValueKey: multimodal
+    image:
+      repository: multimodal-support-desk
+      tag: 1.0.0-SNAPSHOT
+    port: 8091
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  kotlinRagMicroservice:
+    name: kotlin-rag-microservice
+    apiKeyEnv: KOTLIN_RAG_API_KEY
+    apiKeyValueKey: kotlinRag
+    image:
+      repository: kotlin-rag-microservice
+      tag: 1.0.0-SNAPSHOT
+    port: 8092
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  aiValidatedIntegrationHarness:
+    name: ai-validated-integration-harness
+    apiKeyEnv: HARNESS_API_KEY
+    apiKeyValueKey: harness
+    image:
+      repository: ai-validated-integration-harness
+      tag: 1.0.0-SNAPSHOT
+    port: 8093
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 75
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    healthPath: /actuator/health
+
+  securityReviewAssistant:
+    name: security-review-assistant
+    apiKeyEnv: SECURITY_REVIEW_API_KEY
+    apiKeyValueKey: securityReview
+    image:
+      repository: security-review-assistant
+      tag: 1.0.0-SNAPSHOT
+    port: 8094
     replicaCount: 1
     autoscaling:
       enabled: false

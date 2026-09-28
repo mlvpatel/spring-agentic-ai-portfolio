@@ -4,7 +4,7 @@ P9 — Requirements → C4 Mermaid + ADR + capacity + parallel review notes (off
 
 ## Stack pin
 
-Boot 3.3.3 (AI 2.0 later). No live PGVector/Structurizr server.
+Boot 4.1.1 + Spring AI 2.0.1. No live PGVector/Structurizr server.
 
 ## Endpoints
 

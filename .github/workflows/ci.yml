@@ -25,9 +25,11 @@ jobs:
         run: |
           set -euo pipefail
           # Fail on likely real secrets in the tree (exclude docs that mention patterns)
+          # Root *.md must be listed separately: :**/*.md does not match top-level files.
           if git grep -nE 'sk-[a-zA-Z0-9]{20,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|GATEWAY_SECURITY_APIKEY=[^$\s{[:space:]]+' -- \
             ':!.github/workflows/ci.yml' \
             ':!**/FOLDER-STRUCTURE-PROPOSAL.md' \
+            ':!*.md' \
             ':!**/*.md' \
             ':!**/SecurityAstScanner*.java' \
             ':!**/SecurityAstScannerTest.java' \

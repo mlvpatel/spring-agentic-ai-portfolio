@@ -8,7 +8,7 @@ Persist a run from a product brief with constitution/spec/tasks/routing artifact
 
 ## Stack pin
 
-Boot 3.3.3 (AI 2.0 later).
+Boot 4.1.1 + Spring AI 2.0.1.
 
 ## Endpoints
 

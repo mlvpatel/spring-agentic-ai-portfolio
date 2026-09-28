@@ -4,7 +4,7 @@ P5 — Record trajectories, cluster failures, propose skill/prompt deltas (offli
 
 ## Stack pin
 
-Boot 3.3.3 (AI 2.0 later).
+Boot 4.1.1 + Spring AI 2.0.1.
 
 ## Endpoints
 

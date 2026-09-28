@@ -28,7 +28,7 @@ Build jars first from the repo root: `./mvnw -DskipTests package`.
 
 Copy `compose/.env.example` to `compose/.env` (gitignored). Required: `GATEWAY_SECURITY_APIKEY`, `GRAFANA_ADMIN_PASSWORD`. No demo defaults for those.
 
-- `REDIS_URL` defaults to `redis://redis:6379` in compose for the gateway (distributed rate limiting when wired; in-process bucket today).
+- `REDIS_URL` defaults to `redis://redis:6379` in compose; the gateway uses Redis rate limiting when that URL is set, otherwise an in-memory bucket (tests).
 - `OIDC_ISSUER_URI` enables optional OIDC resource-server checks on the gateway when set.
 - `OPENAI_API_KEY` plus `SPRING_AI_MODEL_CHAT=openai` enable Spring AI `ChatClient` via `PortfolioAiClient`; otherwise apps stay offline-first.
 - Postgres JDBC for P2/P8: use `docker-compose.prod.yml` and profile `prod`, or set `DESIGN_RAG_*` / `PAPER_LAB_*` vars from `.env.example`.

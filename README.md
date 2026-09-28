@@ -90,7 +90,7 @@ Gateway listens on host `:8080`. Stress notes: [docs/stress-results.md](docs/str
 - Edge requires `X-API-Key` or `Authorization: Bearer` equal to `GATEWAY_SECURITY_APIKEY`. JWT-looking `ey*` strings and `valid-test-token` are not bypasses.
 - Optional OIDC: set `OIDC_ISSUER_URI` so the gateway also accepts Bearer JWTs from that issuer. Off when blank.
 - Each app also checks its own API key env var.
-- Rate limit: in-process token bucket on the gateway today; prod compose sets `REDIS_URL=redis://redis:6379` for a shared limiter when wired.
+- Rate limit: in-memory for unit tests; Redis when `REDIS_URL` is set (prod compose sets `redis://redis:6379`).
 - Quality gate fails sources that match a hardcoded-secret pattern.
 - Design RAG and Kotlin RAG refuse empty corpora instead of inventing content.
 
@@ -105,10 +105,6 @@ Gateway listens on host `:8080`. Stress notes: [docs/stress-results.md](docs/str
 ```
 
 Maven tests use H2 for P2/P8. They do not require Postgres, Redis, Docker, or an OpenAI key.
-
-## Contributing
-
-Patches welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for build/test (`./mvnw test`), branch/PR flow, and offline vs live AI notes. Security reports go to [SECURITY.md](./SECURITY.md), not a public issue for live secrets. Conduct: [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md).
 
 ## License
 

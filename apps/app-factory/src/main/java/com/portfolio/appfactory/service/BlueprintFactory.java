@@ -41,7 +41,7 @@ public class BlueprintFactory {
         Map<String, String> files = new LinkedHashMap<>();
         files.put("pom.xml", "<project><artifactId>" + safe
                 + "</artifactId><parent><artifactId>spring-boot-starter-parent</artifactId>"
-                + "<version>3.3.3</version></parent></project>");
+                + "<version>4.1.1</version></parent></project>");
         files.put("src/main/resources/application.yml", "spring:\n  application:\n    name: " + safe + "\n");
         files.put("README.md", "# " + safe + "\n\nGenerated from blueprint " + blueprintId + " (offline).\n");
         files.put("docker-compose.yml", "services:\n  app:\n    image: eclipse-temurin:21-jre\n");
