@@ -24,6 +24,7 @@ Verified in the local tree and/or on GitHub.
 12. Docs BOM pin: `docs/multiagent-sdlc-loop.md` and live DESIGN.md stack notes updated to Boot 4.1.1 / Spring AI 2.0.1.
 13. Canvas historical banner added (2026-09-21; plan of record is this file).
 14. Secret-scan false positive fixed: CI now excludes root `*.md` (`:**/*.md` alone missed `TODO.md`).
+15. Public publish: `mlvpatel/spring-agentic-ai-portfolio` at **`67494a0`** (FF from `b964060`). CI run [`36391907928`](https://github.com/mlvpatel/spring-agentic-ai-portfolio/actions/runs/36391907928) **success** (secret scan + unit tests + gitleaks).
 
 ---
 
