@@ -8,7 +8,7 @@ The canvas at `~/.cursor/projects/Users-mlvpatel-Downloads-java-AI/canvases/port
 
 ## Done (verified 2026-09-29)
 
-Verified in the local tree and on GitHub mlvpatel/spring-agentic-ai-portfolio after the publish commit (SHA filled after push).
+Verified in the local tree and on GitHub mlvpatel/spring-agentic-ai-portfolio at public tip **`ae0171f`** (`ae0171f42e975ef404ebe90a1b13cf1535a11beb`).
 
 1. Live reactor: `libs/shared` plus apps P1–P10 and stretch S1–S4 under `apps/` (14 app modules in root `pom.xml`).
 2. Parent BOM: Spring Boot **4.1.1**, Spring AI **2.0.1**, Spring Cloud **2025.1.3**, Java 21.
@@ -26,7 +26,7 @@ Verified in the local tree and on GitHub mlvpatel/spring-agentic-ai-portfolio af
 14. P2 vector retrieval: under `pgvector` (or `design.rag.vector-retrieval=true`), hashing embeddings + real cosine via `InMemoryCosineVectorStore`. Empty corpus refuses; matching snippet returned (unit + Spring tests). Compose `--profile pgvector` starts Postgres for JDBC.
 15. P8 kotlin-rag: same cosine path behind `kotlin.rag.vector-retrieval` / `pgvector`.
 
-Prior public tip before this publish: **`a43f8e4`**. CI on older `67494a0`: [36391907928](https://github.com/mlvpatel/spring-agentic-ai-portfolio/actions/runs/36391907928) success.
+Public publish tip: **`ae0171f`** (parent `a43f8e4`). CI on older `67494a0`: [36391907928](https://github.com/mlvpatel/spring-agentic-ai-portfolio/actions/runs/36391907928) success.
 
 ---
 
