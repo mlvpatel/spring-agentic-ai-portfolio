@@ -1,14 +1,17 @@
 package com.portfolio.mcpbroker.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestClient;
 
 import java.net.URI;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,13 +22,31 @@ import java.util.Map;
  */
 @Component
 public class RemoteToolClient {
-    private final String remoteUrl;
-    private final HttpClient http = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(2))
-            .build();
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(2);
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(5);
 
+    private final String remoteUrl;
+    private final ObjectMapper objectMapper;
+    private final RestClient restClient;
+
+    @Autowired
     public RemoteToolClient(@Value("${app.mcp.remote-url:}") String remoteUrl) {
+        this(remoteUrl, new ObjectMapper(), timedRestClient());
+    }
+
+    RemoteToolClient(String remoteUrl, ObjectMapper objectMapper, RestClient restClient) {
         this.remoteUrl = remoteUrl == null ? "" : remoteUrl.strip();
+        this.objectMapper = objectMapper;
+        this.restClient = restClient;
+    }
+
+    static RestClient timedRestClient() {
+        HttpClient httpClient = HttpClient.newBuilder()
+                .connectTimeout(CONNECT_TIMEOUT)
+                .build();
+        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
+        requestFactory.setReadTimeout(REQUEST_TIMEOUT);
+        return RestClient.builder().requestFactory(requestFactory).build();
     }
 
     public boolean enabled() {
@@ -37,46 +58,25 @@ public class RemoteToolClient {
             throw new IllegalStateException("remote tools disabled");
         }
         try {
-            String body = "{\"name\":\"" + name + "\",\"args\":" + toJson(args) + "}";
-            HttpRequest req = HttpRequest.newBuilder(URI.create(remoteUrl))
-                    .timeout(Duration.ofSeconds(5))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
-                    .build();
-            HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+            InvokeBody payload = new InvokeBody(name, args == null ? Map.of() : args);
+            String body = objectMapper.writeValueAsString(payload);
+            ResponseEntity<String> resp = restClient.post()
+                    .uri(URI.create(remoteUrl))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body)
+                    .retrieve()
+                    .toEntity(String.class);
             Map<String, Object> out = new LinkedHashMap<>();
             out.put("mode", "live-http");
             out.put("tool", name);
-            out.put("status", resp.statusCode());
-            out.put("body", resp.body());
+            out.put("status", resp.getStatusCode().value());
+            out.put("body", resp.getBody());
             return out;
         } catch (Exception e) {
             throw new IllegalStateException("remote invoke failed: " + e.getMessage(), e);
         }
     }
 
-    private static String toJson(Map<String, Object> args) {
-        if (args == null || args.isEmpty()) {
-            return "{}";
-        }
-        StringBuilder sb = new StringBuilder("{");
-        boolean first = true;
-        for (Map.Entry<String, Object> e : args.entrySet()) {
-            if (!first) {
-                sb.append(',');
-            }
-            first = false;
-            sb.append('"').append(e.getKey()).append('"').append(':');
-            Object v = e.getValue();
-            if (v == null) {
-                sb.append("null");
-            } else if (v instanceof Number || v instanceof Boolean) {
-                sb.append(v);
-            } else {
-                sb.append('"').append(String.valueOf(v).replace("\"", "\\\"")).append('"');
-            }
-        }
-        sb.append('}');
-        return sb.toString();
+    public record InvokeBody(String name, Map<String, Object> args) {
     }
 }

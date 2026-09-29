@@ -35,7 +35,7 @@ public class RunStore {
         run.put("id", id);
         run.put("brief", brief.strip());
         run.put("status", "COMPLETED");
-        run.put("mode", "offline");
+        run.put("mode", aiClient.isLive() ? "live" : "offline");
         run.put("createdAt", Instant.now().toString());
         run.put("artifacts", artifacts);
         run.put("planText", aiClient.assist("plan-text", brief.strip()));

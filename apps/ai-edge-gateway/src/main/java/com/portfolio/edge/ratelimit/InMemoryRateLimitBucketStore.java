@@ -1,5 +1,7 @@
 package com.portfolio.edge.ratelimit;
 
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -22,15 +24,30 @@ public final class InMemoryRateLimitBucketStore implements RateLimitBucketStore 
 
     @Override
     public boolean tryConsume(String clientKey) {
-        if (buckets.size() > MAX_BUCKETS) {
-            buckets.clear();
-        }
+        evictOldestIfNeeded();
         TokenBucket bucket = buckets.computeIfAbsent(
                 clientKey, k -> new TokenBucket(burstCapacity, replenishRate));
         return bucket.tryConsume();
     }
 
-    private static final class TokenBucket {
+    private void evictOldestIfNeeded() {
+        if (buckets.size() <= MAX_BUCKETS) {
+            return;
+        }
+        // Drop ~10% oldest by last refill timestamp — avoid resetting every counter.
+        int toRemove = Math.max(1, MAX_BUCKETS / 10);
+        buckets.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue())
+                .limit(toRemove)
+                .map(Map.Entry::getKey)
+                .forEach(buckets::remove);
+    }
+
+    int bucketCount() {
+        return buckets.size();
+    }
+
+    private static final class TokenBucket implements Comparable<TokenBucket> {
         private final int capacity;
         private final int refillRatePerSecond;
         private final AtomicInteger tokens;
@@ -61,6 +78,11 @@ public final class InMemoryRateLimitBucketStore implements RateLimitBucketStore 
                 tokens.updateAndGet(current -> Math.min(capacity, current + refill));
                 lastRefillTimestamp.set(now);
             }
+        }
+
+        @Override
+        public int compareTo(TokenBucket other) {
+            return Long.compare(this.lastRefillTimestamp.get(), other.lastRefillTimestamp.get());
         }
     }
 }

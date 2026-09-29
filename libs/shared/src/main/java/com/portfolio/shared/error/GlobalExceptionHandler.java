@@ -55,4 +55,21 @@ public class GlobalExceptionHandler {
                         Map.of()
                 ));
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> handleIllegalArgument(
+            IllegalArgumentException ex,
+            HttpServletRequest request) {
+        String message = ex.getMessage() != null ? ex.getMessage() : "Bad request";
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ApiError(
+                        Instant.now(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                        message,
+                        request.getRequestURI(),
+                        Map.of()
+                ));
+    }
 }

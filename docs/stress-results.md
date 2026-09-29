@@ -1,5 +1,10 @@
 # Stress results
 
+## 2026-09-29 attempt
+
+Docker daemon was reachable (`docker info` succeeded). No compose services were running (`docker compose ps` empty; `localhost:8080` not answering). Skipped inventing latency. Prior 2026-09-24 sample below is unchanged. Re-run `scripts/run-stress-accuracy.sh` after `docker compose -f infra/compose/docker-compose.yml --env-file .env up -d --build`.
+
+
 ## 2026-09-28 attempt
 
 Docker daemon was not running (`docker info` could not reach the socket). No new latency numbers. Prior sample below is unchanged from 2026-09-24.

@@ -26,7 +26,7 @@ public class ValidationService {
         }
         boolean pass = observed.contains(contract.strip()) || contract.strip().equals(observed.strip());
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("mode", "offline");
+        out.put("mode", portfolioAiClient.isLive() ? "live" : "offline");
         out.put("verdict", pass ? "PASS" : "FAIL");
         out.put("reason", pass ? "Observed payload matches contract token" : "Observed payload missing contract token");
         out.put("aiNote", portfolioAiClient.assist("validation-note", contract + " | " + observed));

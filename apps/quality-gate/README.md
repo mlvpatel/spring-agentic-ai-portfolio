@@ -12,15 +12,7 @@ Catalog **P3** · internal port `8083` · Offline PASS/FAIL scan including secre
 
 ## Container view
 
-```mermaid
-C4Container
-  title Source quality gate
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "quality-gate", "Spring Boot", "Offline PASS/FAIL scan including secret patterns")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /api/v1/gate")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Run
 

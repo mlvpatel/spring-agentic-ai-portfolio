@@ -12,15 +12,7 @@ Catalog **P1** · internal port `8081` · Offline JavaParser patch with cyclomat
 
 ## Container view
 
-```mermaid
-C4Container
-  title YAGNI patch API
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "yagni-copilot", "Spring Boot", "Offline JavaParser patch with cyclomatic bound")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /api/v1/patch")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Math used in code
 

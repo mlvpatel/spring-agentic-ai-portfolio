@@ -27,7 +27,7 @@ public class TriageService {
         boolean hasImage = !imageMeta.isBlank();
         String severity = ticket.toLowerCase(Locale.ROOT).contains("outage") ? "high" : "medium";
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("mode", "offline");
+        out.put("mode", portfolioAiClient.isLive() ? "live" : "offline");
         out.put("severity", severity);
         out.put("hasImageMeta", hasImage);
         out.put("summary", "Triage: " + ticket.strip().lines().findFirst().orElse("").strip());

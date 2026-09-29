@@ -12,15 +12,7 @@ Catalog **P7** · internal port `8087` · Deterministic scaffold files.
 
 ## Container view
 
-```mermaid
-C4Container
-  title App blueprint factory
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "app-factory", "Spring Boot", "Deterministic scaffold files")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /svc/app-factory/api/v1/generate")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Run
 

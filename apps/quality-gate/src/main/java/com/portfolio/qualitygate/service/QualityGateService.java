@@ -1,11 +1,9 @@
 package com.portfolio.qualitygate.service;
 
 import com.portfolio.shared.ai.PortfolioAiClient;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -13,11 +11,9 @@ import java.util.Map;
 
 @Service
 public class QualityGateService {
-    private final Environment environment;
     private final PortfolioAiClient aiClient;
 
-    public QualityGateService(Environment environment, PortfolioAiClient aiClient) {
-        this.environment = environment;
+    public QualityGateService(PortfolioAiClient aiClient) {
         this.aiClient = aiClient;
     }
 
@@ -41,14 +37,19 @@ public class QualityGateService {
         }
         boolean fail = findings.stream().anyMatch(f -> "HIGH".equals(f.get("severity")));
         String verdict = fail ? "FAIL" : "PASS";
-        String mode = Arrays.asList(environment.getActiveProfiles()).contains("ai") ? "ai-optional" : "offline";
+        boolean live = aiClient.isLive();
+        String mode = live ? "live" : "offline";
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("mode", mode);
         out.put("verdict", verdict);
         out.put("findings", findings);
-        out.put("explanation", fail
-                ? "Deterministic gate failed on HIGH findings."
-                : "No HIGH findings; LLM explanation skipped in offline mode.");
+        if (fail) {
+            out.put("explanation", "Deterministic gate failed on HIGH findings.");
+        } else if (live) {
+            out.put("explanation", "No HIGH findings; LLM note attached.");
+        } else {
+            out.put("explanation", "No HIGH findings; LLM explanation skipped in offline mode.");
+        }
         out.put("aiNote", aiClient.assist("review-note", "verdict=" + verdict + " findings=" + findings.size()));
         return out;
     }

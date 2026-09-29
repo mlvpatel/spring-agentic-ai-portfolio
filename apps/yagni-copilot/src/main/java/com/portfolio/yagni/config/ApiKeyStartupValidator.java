@@ -1,5 +1,6 @@
 package com.portfolio.yagni.config;
 
+import com.portfolio.shared.security.ApiKeyProperties;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;

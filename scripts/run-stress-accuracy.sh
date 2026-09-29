@@ -235,82 +235,65 @@ print("PASS" if c=="200" and j.get("status")=="clean" else "FAIL:sec")'
 RESULTS="$RAW/results.tsv"
 : > "$RESULTS"
 
-run_app "yagni-copilot" "http://yagni-copilot:8081" "" "POST" "/api/v1/patch" \
-  '{"changeRequest":"rename method","sourceCode":"public class Demo { public int add(int a, int b) { return a + b; } }"}' \
-  "$ACC_Y"
+BODY_Y='{"changeRequest":"rename method","sourceCode":"public class Demo { public int add(int a, int b) { return a + b; } }"}'
+BODY_RAG='{"stack":"react","intent":"primary"}'
+BODY_RAG_EMPTY='{"stack":"vue","intent":"primary"}'
+BODY_QG_PASS='{"source":"public class Ok { int x = 1; }"}'
+BODY_QG_FAIL='{"source":"String password = \"secret\";"}'
+BODY_SPEC='{"brief":"Add refund API"}'
+BODY_OBS='{}'
+BODY_MCP='{"name":"echo","args":{"q":"hi"}}'
+BODY_APP='{"blueprint":"crud-api","appName":"demo-api"}'
+BODY_PAPER='{"topic":"sort"}'
+BODY_ARCH='{"requirements":"Build checkout API for EU retail"}'
+BODY_TRIAGE='{"ticket":"Payment outage in checkout","imageMeta":"png 800x600"}'
+BODY_KOTLIN='{"q":"vector"}'
+BODY_HARNESS='{"contract":"status=UP","observed":"status=UP ok"}'
+BODY_SEC='{"scope":"auth-review","artifact":"login uses api key auth header"}'
 
-run_app "design-rag-studio" "http://design-rag-studio:8082" \
-  'curl -sS -o /dev/null -X POST "$GW/svc/design-rag-studio/api/v1/ingest" -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" -d "{\"csv\":\"token,value,notes\\ncolor.primary,#0B1F33,brand\\nspace.md,16px,rhythm\"}"' \
-  "POST" "/svc/design-rag-studio/api/v1/generate" '{"stack":"react","intent":"primary"}' \
-  "$ACC_RAG_OK"
+SETUP_RAG='curl -sS -o /dev/null -X POST "$GW/svc/design-rag-studio/api/v1/ingest" -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" -d "{\"csv\":\"token,value,notes\\ncolor.primary,#0B1F33,brand\\nspace.md,16px,rhythm\"}"'
+SETUP_OBS='curl -sS -o /dev/null -X POST "$GW/api/v1/trajectories" -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" -d "{\"prompt\":\"call search\",\"tool\":\"search\",\"outcome\":\"error timeout\"}"'
+SETUP_MCP='curl -sS -o /dev/null -X POST "$GW/api/v1/tools" -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" -d "{\"name\":\"echo\",\"scope\":\"read\",\"schema\":{\"type\":\"object\"}}"'
+SETUP_PAPER='curl -sS -o /dev/null -X POST "$GW/api/v1/papers" -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" -d "{\"title\":\"Sort survey\",\"text\":\"Quicksort average n log n\"}"'
+SETUP_KOTLIN='curl -sS -o /dev/null -X POST "$GW/svc/kotlin-rag-microservice/api/v1/ingest" -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" -d "{\"title\":\"RAG notes\",\"text\":\"vector retrieval with citations\"}"'
 
-(cd "$COMPOSE_DIR" && docker compose --env-file .env up -d --force-recreate --no-deps design-rag-studio >/dev/null)
-sleep 4
-run_app "design-rag-empty" "http://design-rag-studio:8082" "" "POST" "/svc/design-rag-studio/api/v1/generate" \
-  '{"stack":"vue","intent":"primary"}' \
-  "$ACC_RAG_REFUSE"
+# hook|name|downstream|setup_var|method|path|body_var|acc_var
+# hook: empty, or recreate:<service>
+STRESS_CASES=(
+  "|yagni-copilot|http://yagni-copilot:8081||POST|/api/v1/patch|BODY_Y|ACC_Y"
+  "|design-rag-studio|http://design-rag-studio:8082|SETUP_RAG|POST|/svc/design-rag-studio/api/v1/generate|BODY_RAG|ACC_RAG_OK"
+  "recreate:design-rag-studio|design-rag-empty|http://design-rag-studio:8082||POST|/svc/design-rag-studio/api/v1/generate|BODY_RAG_EMPTY|ACC_RAG_REFUSE"
+  "|quality-gate|http://quality-gate:8083||POST|/api/v1/gate|BODY_QG_PASS|ACC_QG_PASS"
+  "|quality-gate-secret|http://quality-gate:8083||POST|/api/v1/gate|BODY_QG_FAIL|ACC_QG_FAIL"
+  "|spec-orchestrator|http://spec-orchestrator:8084||POST|/api/v1/runs|BODY_SPEC|ACC_SPEC"
+  "|agent-observability|http://agent-observability:8085|SETUP_OBS|POST|/api/v1/analyze|BODY_OBS|ACC_OBS"
+  "|mcp-broker|http://mcp-broker:8086|SETUP_MCP|POST|/api/v1/invoke|BODY_MCP|ACC_MCP"
+  "|app-factory|http://app-factory:8087||POST|/svc/app-factory/api/v1/generate|BODY_APP|ACC_APP"
+  "|paper-algorithm-lab|http://paper-algorithm-lab:8088|SETUP_PAPER|POST|/api/v1/synthesize|BODY_PAPER|ACC_PAPER"
+  "|system-architect|http://system-architect:8089||POST|/api/v1/architect|BODY_ARCH|ACC_ARCH"
+  "|ai-edge-gateway|http://yagni-copilot:8081||POST|/api/v1/patch|BODY_Y|ACC_Y"
+  "|multimodal-support-desk|http://multimodal-support-desk:8091||POST|/api/v1/triage|BODY_TRIAGE|ACC_TRIAGE"
+  "recreate:kotlin-rag-microservice|kotlin-rag-empty|http://kotlin-rag-microservice:8092||POST|/api/v1/query|BODY_KOTLIN|ACC_KOTLIN_EMPTY"
+  "|kotlin-rag-microservice|http://kotlin-rag-microservice:8092|SETUP_KOTLIN|POST|/api/v1/query|BODY_KOTLIN|ACC_KOTLIN"
+  "|ai-validated-integration-harness|http://ai-validated-integration-harness:8093||POST|/api/v1/validate|BODY_HARNESS|ACC_HARNESS"
+  "|security-review-assistant|http://security-review-assistant:8094||POST|/api/v1/review|BODY_SEC|ACC_SEC"
+)
 
-run_app "quality-gate" "http://quality-gate:8083" "" "POST" "/api/v1/gate" \
-  '{"source":"public class Ok { int x = 1; }"}' \
-  "$ACC_QG_PASS"
-
-run_app "quality-gate-secret" "http://quality-gate:8083" "" "POST" "/api/v1/gate" \
-  '{"source":"String password = \"secret\";"}' \
-  "$ACC_QG_FAIL"
-
-run_app "spec-orchestrator" "http://spec-orchestrator:8084" "" "POST" "/api/v1/runs" \
-  '{"brief":"Add refund API"}' \
-  "$ACC_SPEC"
-
-run_app "agent-observability" "http://agent-observability:8085" \
-  'curl -sS -o /dev/null -X POST "$GW/api/v1/trajectories" -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" -d "{\"prompt\":\"call search\",\"tool\":\"search\",\"outcome\":\"error timeout\"}"' \
-  "POST" "/api/v1/analyze" '{}' \
-  "$ACC_OBS"
-
-run_app "mcp-broker" "http://mcp-broker:8086" \
-  'curl -sS -o /dev/null -X POST "$GW/api/v1/tools" -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" -d "{\"name\":\"echo\",\"scope\":\"read\",\"schema\":{\"type\":\"object\"}}"' \
-  "POST" "/api/v1/invoke" '{"name":"echo","args":{"q":"hi"}}' \
-  "$ACC_MCP"
-
-run_app "app-factory" "http://app-factory:8087" "" "POST" "/svc/app-factory/api/v1/generate" \
-  '{"blueprint":"crud-api","appName":"demo-api"}' \
-  "$ACC_APP"
-
-run_app "paper-algorithm-lab" "http://paper-algorithm-lab:8088" \
-  'curl -sS -o /dev/null -X POST "$GW/api/v1/papers" -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" -d "{\"title\":\"Sort survey\",\"text\":\"Quicksort average n log n\"}"' \
-  "POST" "/api/v1/synthesize" '{"topic":"sort"}' \
-  "$ACC_PAPER"
-
-run_app "system-architect" "http://system-architect:8089" "" "POST" "/api/v1/architect" \
-  '{"requirements":"Build checkout API for EU retail"}' \
-  "$ACC_ARCH"
-
-run_app "ai-edge-gateway" "http://yagni-copilot:8081" "" "POST" "/api/v1/patch" \
-  '{"changeRequest":"rename method","sourceCode":"public class Demo { public int add(int a, int b) { return a + b; } }"}' \
-  "$ACC_Y"
-
-run_app "multimodal-support-desk" "http://multimodal-support-desk:8091" "" "POST" "/api/v1/triage" \
-  '{"ticket":"Payment outage in checkout","imageMeta":"png 800x600"}' \
-  "$ACC_TRIAGE"
-
-(cd "$COMPOSE_DIR" && docker compose --env-file .env up -d --force-recreate --no-deps kotlin-rag-microservice >/dev/null)
-sleep 4
-run_app "kotlin-rag-empty" "http://kotlin-rag-microservice:8092" "" "POST" "/api/v1/query" \
-  '{"q":"vector"}' \
-  "$ACC_KOTLIN_EMPTY"
-
-run_app "kotlin-rag-microservice" "http://kotlin-rag-microservice:8092" \
-  'curl -sS -o /dev/null -X POST "$GW/svc/kotlin-rag-microservice/api/v1/ingest" -H "Content-Type: application/json" -H "X-API-Key: $API_KEY" -d "{\"title\":\"RAG notes\",\"text\":\"vector retrieval with citations\"}"' \
-  "POST" "/api/v1/query" '{"q":"vector"}' \
-  "$ACC_KOTLIN"
-
-run_app "ai-validated-integration-harness" "http://ai-validated-integration-harness:8093" "" "POST" "/api/v1/validate" \
-  '{"contract":"status=UP","observed":"status=UP ok"}' \
-  "$ACC_HARNESS"
-
-run_app "security-review-assistant" "http://security-review-assistant:8094" "" "POST" "/api/v1/review" \
-  '{"scope":"auth-review","artifact":"login uses api key auth header"}' \
-  "$ACC_SEC"
+for case in "${STRESS_CASES[@]}"; do
+  IFS='|' read -r hook name down setupv method path bodyv accv <<< "$case"
+  if [[ "$hook" == recreate:* ]]; then
+    svc="${hook#recreate:}"
+    (cd "$COMPOSE_DIR" && docker compose --env-file .env up -d --force-recreate --no-deps "$svc" >/dev/null)
+    sleep 4
+  fi
+  setup=""
+  if [[ -n "$setupv" ]]; then
+    setup="${!setupv}"
+  fi
+  body="${!bodyv}"
+  acc="${!accv}"
+  run_app "$name" "$down" "$setup" "$method" "$path" "$body" "$acc"
+done
 
 retarget "http://yagni-copilot:8081"
 echo "DONE results=$RESULTS" >&2

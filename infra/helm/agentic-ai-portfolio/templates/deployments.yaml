@@ -73,6 +73,28 @@ spec:
                   name: {{ include "agentic-ai-portfolio.fullname" $ }}-config
                   key: {{ $envKey }}
             {{- end }}
+            {{- /* Downstream keys remapped by gateway.downstream.keys in application.yml */}}
+            {{- range $envKey := list
+              "YAGNI_API_KEY"
+              "DESIGN_RAG_API_KEY"
+              "QUALITY_GATE_API_KEY"
+              "SPEC_ORCH_API_KEY"
+              "OBSERVABILITY_API_KEY"
+              "MCP_BROKER_API_KEY"
+              "APP_FACTORY_API_KEY"
+              "PAPER_LAB_API_KEY"
+              "ARCHITECT_API_KEY"
+              "MULTIMODAL_DESK_API_KEY"
+              "KOTLIN_RAG_API_KEY"
+              "AI_HARNESS_API_KEY"
+              "SECURITY_REVIEW_API_KEY"
+            }}
+            - name: {{ $envKey }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "agentic-ai-portfolio.fullname" $ }}-secrets
+                  key: {{ $envKey }}
+            {{- end }}
             {{- if $.Values.redisUrl }}
             - name: REDIS_URL
               valueFrom:

@@ -12,15 +12,7 @@ Catalog **P8** · internal port `8088` · H2 paper store + offline synthesize.
 
 ## Container view
 
-```mermaid
-C4Container
-  title Paper to algorithm lab
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "paper-algorithm-lab", "Spring Boot", "H2 paper store + offline synthesize")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /api/v1/papers|synthesize")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Run
 

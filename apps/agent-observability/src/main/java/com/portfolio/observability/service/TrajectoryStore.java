@@ -57,7 +57,7 @@ public class TrajectoryStore {
             proposals.add("No failure clusters; keep current prompts.");
         }
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("mode", "offline");
+        out.put("mode", aiClient.isLive() ? "live" : "offline");
         out.put("total", trajectories.size());
         out.put("failures", failed.size());
         out.put("clusters", byTool);

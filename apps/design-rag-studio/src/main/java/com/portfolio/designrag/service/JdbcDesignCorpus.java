@@ -1,23 +1,40 @@
 package com.portfolio.designrag.service;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
 /**
  * Live JDBC corpus. Default uses embedded H2 (no paid key).
- * Profile {@code pgvector} points the datasource at Postgres (compose/Testcontainers).
+ * Profile {@code pgvector} points the datasource at Postgres (compose) and switches
+ * retrieve() to in-memory cosine ranking over hashing embeddings (no Docker needed in tests).
  */
 @Component
-public class JdbcDesignCorpus implements DesignCorpus {
+public class JdbcDesignCorpus {
     private final JdbcTemplate jdbc;
+    private final boolean vectorRetrieval;
+    private final InMemoryCosineVectorStore vectorStore;
 
-    public JdbcDesignCorpus(JdbcTemplate jdbc) {
+    @Autowired
+    public JdbcDesignCorpus(JdbcTemplate jdbc, Environment environment) {
         this.jdbc = jdbc;
+        this.vectorRetrieval = Arrays.asList(environment.getActiveProfiles()).contains("pgvector")
+                || Boolean.parseBoolean(environment.getProperty("design.rag.vector-retrieval", "false"));
+        this.vectorStore = new InMemoryCosineVectorStore(new HashingTextEmbedder(64));
+    }
+
+    /** Test/helper constructor. */
+    JdbcDesignCorpus(JdbcTemplate jdbc, boolean vectorRetrieval) {
+        this.jdbc = jdbc;
+        this.vectorRetrieval = vectorRetrieval;
+        this.vectorStore = new InMemoryCosineVectorStore(new HashingTextEmbedder(64));
     }
 
     @PostConstruct
@@ -32,7 +49,6 @@ public class JdbcDesignCorpus implements DesignCorpus {
                 """);
     }
 
-    @Override
     public int ingestCsv(String csv) {
         int added = 0;
         for (String line : csv.split("\\R")) {
@@ -44,23 +60,48 @@ public class JdbcDesignCorpus implements DesignCorpus {
             if (parts.length < 2) {
                 continue;
             }
-            jdbc.update(
-                    "INSERT INTO design_tokens(name, token_value, notes) VALUES (?,?,?)",
+            TokenDoc doc = new TokenDoc(
                     parts[0].trim(),
                     parts[1].trim(),
                     parts.length > 2 ? parts[2].trim() : "");
+            jdbc.update(
+                    "INSERT INTO design_tokens(name, token_value, notes) VALUES (?,?,?)",
+                    doc.name(),
+                    doc.value(),
+                    doc.notes());
+            if (vectorRetrieval) {
+                vectorStore.add(doc);
+            }
             added++;
         }
         return added;
     }
 
-    @Override
     public List<TokenDoc> retrieve(String query, int limit) {
-        String like = "%" + query.toLowerCase(Locale.ROOT) + "%";
+        if (vectorRetrieval) {
+            return retrieveVector(query, limit);
+        }
+        return retrieveLike(query, limit);
+    }
+
+    private List<TokenDoc> retrieveVector(String query, int limit) {
+        if (vectorStore.size() == 0) {
+            return List.of();
+        }
+        List<InMemoryCosineVectorStore.ScoredToken> hits = vectorStore.search(query, limit);
+        List<TokenDoc> out = new ArrayList<>(hits.size());
+        for (InMemoryCosineVectorStore.ScoredToken hit : hits) {
+            out.add(hit.doc());
+        }
+        return out;
+    }
+
+    private List<TokenDoc> retrieveLike(String query, int limit) {
+        String like = "%" + escapeLike(query.toLowerCase(Locale.ROOT)) + "%";
         List<TokenDoc> hits = jdbc.query(
                 """
                 SELECT name, token_value, notes FROM design_tokens
-                WHERE LOWER(name) LIKE ? OR LOWER(token_value) LIKE ? OR LOWER(notes) LIKE ?
+                WHERE LOWER(name) LIKE ? ESCAPE '\\' OR LOWER(token_value) LIKE ? ESCAPE '\\' OR LOWER(notes) LIKE ? ESCAPE '\\'
                 LIMIT ?
                 """,
                 (rs, i) -> new TokenDoc(rs.getString(1), rs.getString(2), rs.getString(3)),
@@ -74,9 +115,19 @@ public class JdbcDesignCorpus implements DesignCorpus {
         return new ArrayList<>(hits);
     }
 
-    @Override
     public int size() {
         Integer n = jdbc.queryForObject("SELECT COUNT(*) FROM design_tokens", Integer.class);
         return n == null ? 0 : n;
+    }
+
+    boolean isVectorRetrieval() {
+        return vectorRetrieval;
+    }
+
+    static String escapeLike(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        return raw.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 }

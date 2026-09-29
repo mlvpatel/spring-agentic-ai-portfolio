@@ -12,15 +12,7 @@ Catalog **P4** · internal port `8084` · Offline COMPLETED runs from a brief.
 
 ## Container view
 
-```mermaid
-C4Container
-  title Spec run orchestrator
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "spec-orchestrator", "Spring Boot", "Offline COMPLETED runs from a brief")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /api/v1/runs")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Run
 

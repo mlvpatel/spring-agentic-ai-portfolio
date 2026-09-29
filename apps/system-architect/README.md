@@ -12,15 +12,7 @@ Catalog **P9** · internal port `8089` · Offline ADR + C4 Mermaid.
 
 ## Container view
 
-```mermaid
-C4Container
-  title System architect
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "system-architect", "Spring Boot", "Offline ADR + C4 Mermaid")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /api/v1/architect")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Run
 

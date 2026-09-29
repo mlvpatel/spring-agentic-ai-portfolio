@@ -21,30 +21,8 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Secret pattern scan
-        run: |
-          set -euo pipefail
-          # Fail on likely real secrets in the tree (exclude docs that mention patterns)
-          # Root *.md must be listed separately: :**/*.md does not match top-level files.
-          if git grep -nE 'sk-[a-zA-Z0-9]{20,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|GATEWAY_SECURITY_APIKEY=[^$\s{[:space:]]+' -- \
-            ':!.github/workflows/ci.yml' \
-            ':!**/FOLDER-STRUCTURE-PROPOSAL.md' \
-            ':!*.md' \
-            ':!**/*.md' \
-            ':!**/SecurityAstScanner*.java' \
-            ':!**/SecurityAstScannerTest.java' \
-            ':!**/demo-portfolio.sh' 2>/dev/null; then
-            echo "Possible secret material found" >&2
-            exit 1
-          fi
-          if find . -name '*.p12' -not -path './.git/*' | grep -q .; then
-            echo "PKCS12 files must not be committed" >&2
-            exit 1
-          fi
-          echo "Secret scan clean"
-
-      - name: Unit tests
-        run: ./mvnw -B -DskipITs test
+      - name: Unit tests and package
+        run: ./mvnw -B -DskipITs verify
 
   gitleaks:
     name: Gitleaks

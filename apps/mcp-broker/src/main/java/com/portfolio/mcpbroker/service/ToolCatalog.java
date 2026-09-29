@@ -30,7 +30,7 @@ public class ToolCatalog {
         tool.put("name", name.strip());
         tool.put("scope", scope.strip());
         tool.put("schema", schema == null ? Map.of() : schema);
-        tool.put("mode", "offline");
+        tool.put("mode", portfolioAiClient.isLive() ? "live" : "offline");
         tools.put(name.strip(), tool);
         return tool;
     }
@@ -55,7 +55,7 @@ public class ToolCatalog {
         result.put("note", "Local stub invocation; set app.mcp.remote-url for live-http.");
         result.put("aiDescription", portfolioAiClient.assist("tool-description", name));
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("mode", "offline");
+        out.put("mode", portfolioAiClient.isLive() ? "live" : "offline");
         out.put("tool", name);
         out.put("accepted", true);
         out.put("result", result);

@@ -50,7 +50,7 @@ public class ArchitectService {
                 "cost", "Defer managed queue until backlog > 1k msgs"
         );
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("mode", "offline");
+        out.put("mode", portfolioAiClient.isLive() ? "live" : "offline");
         out.put("requirements", req);
         out.put("c4Mermaid", mermaid);
         out.put("adr", adr);

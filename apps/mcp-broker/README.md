@@ -12,15 +12,7 @@ Catalog **P6** · internal port `8086` · Offline stub; optional remote URL.
 
 ## Container view
 
-```mermaid
-C4Container
-  title MCP tool broker
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "mcp-broker", "Spring Boot", "Offline stub; optional remote URL")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /api/v1/tools|invoke")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Run
 

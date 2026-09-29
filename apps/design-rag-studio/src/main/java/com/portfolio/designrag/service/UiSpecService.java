@@ -11,11 +11,11 @@ import java.util.Map;
 
 @Service
 public class UiSpecService {
-    private final DesignCorpus corpus;
+    private final JdbcDesignCorpus corpus;
     private final Environment environment;
     private final PortfolioAiClient aiClient;
 
-    public UiSpecService(DesignCorpus corpus, Environment environment, PortfolioAiClient aiClient) {
+    public UiSpecService(JdbcDesignCorpus corpus, Environment environment, PortfolioAiClient aiClient) {
         this.corpus = corpus;
         this.environment = environment;
         this.aiClient = aiClient;
@@ -48,8 +48,9 @@ public class UiSpecService {
     }
 
     private String mode() {
-        if (Arrays.asList(environment.getActiveProfiles()).contains("pgvector")) {
-            return "jdbc-postgres";
+        if (Arrays.asList(environment.getActiveProfiles()).contains("pgvector")
+                || Boolean.parseBoolean(environment.getProperty("design.rag.vector-retrieval", "false"))) {
+            return "vector-pgvector";
         }
         return "jdbc-h2";
     }

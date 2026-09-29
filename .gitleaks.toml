@@ -1,0 +1,11 @@
+# Align with former CI so root TODO.md (planning notes) does not false-positive.
+# README and other docs remain scanned so pasted keys are still caught.
+title = "agentic-ai-expert-portfolio"
+
+[extend]
+useDefault = true
+
+[allowlist]
+paths = [
+  '''(^|/)TODO\.md$''',
+]

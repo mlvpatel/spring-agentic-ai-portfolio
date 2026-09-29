@@ -1,6 +1,6 @@
 package com.portfolio.designrag.web;
 
-import com.portfolio.designrag.service.DesignCorpus;
+import com.portfolio.designrag.service.JdbcDesignCorpus;
 import com.portfolio.designrag.service.UiSpecService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,10 +10,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1")
 public class DesignRagController {
-    private final DesignCorpus corpus;
+    private final JdbcDesignCorpus corpus;
     private final UiSpecService uiSpecService;
 
-    public DesignRagController(DesignCorpus corpus, UiSpecService uiSpecService) {
+    public DesignRagController(JdbcDesignCorpus corpus, UiSpecService uiSpecService) {
         this.corpus = corpus;
         this.uiSpecService = uiSpecService;
     }

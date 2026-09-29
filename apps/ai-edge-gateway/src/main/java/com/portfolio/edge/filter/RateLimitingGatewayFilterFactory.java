@@ -1,6 +1,7 @@
 package com.portfolio.edge.filter;
 
 import com.portfolio.edge.ratelimit.InMemoryRateLimitBucketStore;
+import com.portfolio.edge.web.JsonErrorBodies;
 import com.portfolio.edge.ratelimit.RateLimitBucketStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -41,15 +43,23 @@ public class RateLimitingGatewayFilterFactory extends AbstractGatewayFilterFacto
                 return chain.filter(exchange);
             }
 
-            String clientIp = exchange.getRequest().getRemoteAddress() != null
-                    ? exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()
-                    : "default-client";
-
-            if (!bucketStore.tryConsume(clientIp)) {
+            String clientKey = clientKey(exchange);
+            if (!bucketStore.tryConsume(clientKey)) {
                 return onRateLimitExceeded(exchange);
             }
             return chain.filter(exchange);
         };
+    }
+
+    private static String clientKey(ServerWebExchange exchange) {
+        String principal = exchange.getRequest().getHeaders().getFirst("X-Authenticated-User");
+        String ip = exchange.getRequest().getRemoteAddress() != null
+                ? exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()
+                : "default-client";
+        if (StringUtils.hasText(principal)) {
+            return principal.trim() + "|" + ip;
+        }
+        return ip;
     }
 
     private Mono<Void> onRateLimitExceeded(ServerWebExchange exchange) {
@@ -57,10 +67,8 @@ public class RateLimitingGatewayFilterFactory extends AbstractGatewayFilterFacto
         response.setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         response.getHeaders().add("Retry-After", "1");
-        String body = String.format(
-                "{\"status\":429,\"error\":\"Too Many Requests\",\"message\":\"Rate limit exceeded\",\"path\":\"%s\"}",
-                exchange.getRequest().getURI().getPath());
-        DataBuffer buffer = response.bufferFactory().wrap(body.getBytes(StandardCharsets.UTF_8));
+        byte[] bytes = JsonErrorBodies.tooManyRequests(exchange.getRequest().getURI().getPath());
+        DataBuffer buffer = response.bufferFactory().wrap(bytes);
         return response.writeWith(Mono.just(buffer));
     }
 

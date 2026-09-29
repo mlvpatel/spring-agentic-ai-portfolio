@@ -12,15 +12,7 @@ Catalog **P10** · internal port `8080` · API key auth, rate limit, multi-route
 
 ## Container view
 
-```mermaid
-C4Container
-  title Edge gateway
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "ai-edge-gateway", "Spring Boot", "API key auth, rate limit, multi-route proxy")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "any /api/** alias or /svc/<app>/**")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Math used in code
 

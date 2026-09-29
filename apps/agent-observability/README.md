@@ -12,15 +12,7 @@ Catalog **P5** · internal port `8085` · Cluster failed tool calls offline.
 
 ## Container view
 
-```mermaid
-C4Container
-  title Trajectory observability
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "agent-observability", "Spring Boot", "Cluster failed tool calls offline")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /api/v1/trajectories|analyze")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Run
 

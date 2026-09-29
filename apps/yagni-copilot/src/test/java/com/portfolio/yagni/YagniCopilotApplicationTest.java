@@ -80,7 +80,7 @@ class YagniCopilotApplicationTest {
     }
 
     @Test
-    @DisplayName("Patch returns offline mode and metrics")
+    @DisplayName("Patch returns offline mode and metrics without OPENAI_API_KEY")
     void patchOk() throws Exception {
         mockMvc.perform(post("/api/v1/patch")
                         .header("X-API-Key", KEY)
@@ -94,6 +94,8 @@ class YagniCopilotApplicationTest {
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.mode").value("offline"))
+                .andExpect(jsonPath("$.mode", not("live")))
+                .andExpect(jsonPath("$.explanation", containsString("offline-patch-explanation")))
                 .andExpect(jsonPath("$.withinBounds").value(true))
                 .andExpect(jsonPath("$.cyclomaticComplexity").exists())
                 .andExpect(jsonPath("$.patch", containsString("YAGNI patch")))

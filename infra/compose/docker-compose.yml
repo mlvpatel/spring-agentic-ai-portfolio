@@ -1,6 +1,6 @@
 # Prod-oriented stack: builds app images from jars (run ./mvnw -DskipTests package first).
 # Fast jar-mount override: docker compose -f docker-compose.yml -f docker-compose.dev.yml ...
-# Optional: --profile postgres (P2/P8 JDBC), --profile tls (nginx :8443).
+# Optional: --profile postgres|pgvector (P2/P8 JDBC), --profile tls (nginx :8443).
 # Copy .env.example → .env and set GATEWAY_SECURITY_APIKEY + GRAFANA_ADMIN_PASSWORD.
 
 x-app-build: &app-build
@@ -15,11 +15,11 @@ services:
 
   design-rag-db:
     image: postgres:16-alpine
-    profiles: ["postgres", "prod"]
+    profiles: ["postgres", "prod", "pgvector"]
     environment:
       POSTGRES_DB: design
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: design
+      POSTGRES_PASSWORD: ${DESIGN_RAG_DB_PASSWORD:-design}
     ports:
       - "5433:5432"
     networks:
@@ -27,11 +27,11 @@ services:
 
   paper-lab-db:
     image: postgres:16-alpine
-    profiles: ["postgres", "prod"]
+    profiles: ["postgres", "prod", "pgvector"]
     environment:
       POSTGRES_DB: papers
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: papers
+      POSTGRES_PASSWORD: ${PAPER_LAB_DB_PASSWORD:-papers}
     networks:
       - agentic-network
 
@@ -253,6 +253,20 @@ services:
       GATEWAY_URL_KOTLIN_RAG: http://kotlin-rag-microservice:8092
       GATEWAY_URL_HARNESS: http://ai-validated-integration-harness:8093
       GATEWAY_URL_SECURITY_REVIEW: http://security-review-assistant:8094
+      # Downstream keys remapped by gateway.downstream.keys (same names as app containers)
+      YAGNI_API_KEY: ${YAGNI_API_KEY:-}
+      DESIGN_RAG_API_KEY: ${DESIGN_RAG_API_KEY:-}
+      QUALITY_GATE_API_KEY: ${QUALITY_GATE_API_KEY:-}
+      SPEC_ORCH_API_KEY: ${SPEC_ORCH_API_KEY:-}
+      OBSERVABILITY_API_KEY: ${OBSERVABILITY_API_KEY:-}
+      MCP_BROKER_API_KEY: ${MCP_BROKER_API_KEY:-}
+      APP_FACTORY_API_KEY: ${APP_FACTORY_API_KEY:-}
+      PAPER_LAB_API_KEY: ${PAPER_LAB_API_KEY:-}
+      ARCHITECT_API_KEY: ${ARCHITECT_API_KEY:-}
+      MULTIMODAL_DESK_API_KEY: ${MULTIMODAL_DESK_API_KEY:-}
+      KOTLIN_RAG_API_KEY: ${KOTLIN_RAG_API_KEY:-}
+      AI_HARNESS_API_KEY: ${AI_HARNESS_API_KEY:-}
+      SECURITY_REVIEW_API_KEY: ${SECURITY_REVIEW_API_KEY:-}
     depends_on:
       - redis
       - yagni-copilot

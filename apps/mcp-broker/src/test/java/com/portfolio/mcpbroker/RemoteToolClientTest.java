@@ -64,4 +64,29 @@ class RemoteToolClientTest {
         assertThat(result.get("status")).isEqualTo(200);
         assertThat(String.valueOf(result.get("body"))).contains("live");
     }
+
+    @Test
+    @DisplayName("Remote invoke JSON-escapes tool names with quotes")
+    void escapesToolNameInJsonBody() throws Exception {
+        java.util.concurrent.atomic.AtomicReference<String> seen = new java.util.concurrent.atomic.AtomicReference<>();
+        server.createContext("/tools/escape", exchange -> {
+            seen.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            byte[] resp = "{\"ok\":true}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, resp.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(resp);
+            }
+        });
+        String escapeUrl = "http://127.0.0.1:" + server.getAddress().getPort() + "/tools/escape";
+        RemoteToolClient client = new RemoteToolClient(escapeUrl);
+        String malicious = "evil\",\"injected\":true";
+        Map<String, Object> result = client.invoke(malicious, Map.of("k", "v\"x"));
+        assertThat(result.get("status")).isEqualTo(200);
+        com.fasterxml.jackson.databind.JsonNode node =
+                new com.fasterxml.jackson.databind.ObjectMapper().readTree(seen.get());
+        assertThat(node.get("name").asText()).isEqualTo(malicious);
+        assertThat(node.get("injected")).isNull();
+        assertThat(node.get("args").get("k").asText()).isEqualTo("v\"x");
+    }
 }

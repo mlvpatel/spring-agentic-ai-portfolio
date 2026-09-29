@@ -264,7 +264,7 @@ services:
 
   multimodalSupportDesk:
     name: multimodal-support-desk
-    apiKeyEnv: MULTIMODAL_API_KEY
+    apiKeyEnv: MULTIMODAL_DESK_API_KEY
     apiKeyValueKey: multimodal
     image:
       repository: multimodal-support-desk
@@ -310,7 +310,7 @@ services:
 
   aiValidatedIntegrationHarness:
     name: ai-validated-integration-harness
-    apiKeyEnv: HARNESS_API_KEY
+    apiKeyEnv: AI_HARNESS_API_KEY
     apiKeyValueKey: harness
     image:
       repository: ai-validated-integration-harness

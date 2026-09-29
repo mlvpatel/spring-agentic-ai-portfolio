@@ -50,12 +50,15 @@ public class YagniPatchService {
         if (metrics.astDepth() > 8) {
             notes.add("AST depth " + metrics.astDepth() + " is deep; prefer early returns.");
         }
-        notes.add(portfolioAiClient.assist("patch-explanation", request.changeRequest() + "\n" + source));
+        String explanation = portfolioAiClient.assist(
+                "patch-explanation", request.changeRequest() + "\n" + source);
+        notes.add(explanation);
         String patch = buildPatch(request.changeRequest(), source, within);
         return new PatchResponse(
                 resolveMode(),
                 request.changeRequest(),
                 patch,
+                explanation,
                 metrics.cyclomatic(),
                 metrics.astDepth(),
                 maxCyclomatic,
@@ -65,8 +68,7 @@ public class YagniPatchService {
     }
 
     private String resolveMode() {
-        // Default offline; live ChatClient only when OPENAI_API_KEY + ChatModel are present.
-        return "offline";
+        return portfolioAiClient.isLive() ? "live" : "offline";
     }
 
     private static String sanitize(String source) {

@@ -6,6 +6,7 @@ public record PatchResponse(
         String mode,
         String changeRequest,
         String patch,
+        String explanation,
         int cyclomaticComplexity,
         int astDepth,
         int maxCyclomatic,

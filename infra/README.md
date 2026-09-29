@@ -17,6 +17,7 @@ Ops topology for the live `apps/*` products. Application code stays under `apps/
 |---|---|
 | Prod images (H2 in P2/P8) | `docker compose -f docker-compose.yml --env-file .env up -d --build` |
 | Prod + Postgres (P2/P8 `pgvector`) | `docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile prod --env-file .env up -d --build` |
+| Postgres only (`pgvector` profile alias) | `docker compose -f docker-compose.yml --profile pgvector --env-file .env up -d` (DB services; set `DESIGN_RAG_SPRING_PROFILES=pgvector`) |
 | Dev jar mounts | `docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env up -d` |
 | TLS on `:8443` | Run `./infra/scripts/generate-dev-certs.sh`, then add `--profile tls` |
 

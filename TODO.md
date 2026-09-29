@@ -1,38 +1,41 @@
 # Implementation plan
 
-Plan of record for this workspace. Status date: **2026-09-28**.
+Plan of record for this workspace. Status date: **2026-09-29**.
 
 The canvas at `~/.cursor/projects/Users-mlvpatel-Downloads-java-AI/canvases/portfolio-implementation-plan.canvas.tsx` is a 2026-09-21 audit of the old numbered `01–10` modules (Boot 3.3.3). It is not current. Use this file. Canvas now shows a historical banner pointing here.
 
 ---
 
-## Done (verified 2026-09-28)
+## Done (verified 2026-09-29)
 
-Verified in the local tree and/or on GitHub.
+Verified in the local tree and on GitHub mlvpatel/spring-agentic-ai-portfolio after the publish commit (SHA filled after push).
 
 1. Live reactor: `libs/shared` plus apps P1–P10 and stretch S1–S4 under `apps/` (14 app modules in root `pom.xml`).
 2. Parent BOM: Spring Boot **4.1.1**, Spring AI **2.0.1**, Spring Cloud **2025.1.3**, Java 21.
-3. `PortfolioAiClient` in `libs/shared` (offline default; live path needs `OPENAI_API_KEY` and `SPRING_AI_MODEL_CHAT=openai`). Call sites present in product apps including Kotlin RAG.
-4. Edge gateway (`apps/ai-edge-gateway`): unique `/svc/<app>/**` routes and path aliases; no catch-all `/api/**`.
+3. `PortfolioAiClient` in `libs/shared` (offline default; live path needs `OPENAI_API_KEY` and ChatModel). P1 surfaces assist text in `PatchResponse.explanation` and `mode` follows `isLive()`.
+4. Edge gateway (`apps/ai-edge-gateway`): unique `/svc/<app>/**` routes; remaps downstream API keys; `REDIS_URL` from default Compose redis.
 5. Rate limit: `RedisRateLimitBucketStore` when `REDIS_URL` is set; in-memory store for tests.
-6. Compose: Postgres via `--profile postgres` / `prod`; optional TLS nginx on 8443; `infra/docker/Dockerfile.app` present.
+6. Compose default file builds via `infra/docker/Dockerfile.app`. Jar mounts stay in `docker-compose.dev.yml`. Redis starts without a special profile. Postgres via `--profile postgres|pgvector|prod`.
 7. Optional OIDC: `OIDC_ISSUER_URI` / `gateway.security.oidcIssuerUri` on the gateway.
-8. CI workflow at `.github/workflows/ci.yml` (JDK 21, secret scan with root `*.md` exclusion, `./mvnw test`, gitleaks).
-9. Community docs in tree: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/ISSUE_TEMPLATE/*`, `.github/PULL_REQUEST_TEMPLATE.md` (from public `b964060`).
-10. Unit tests: **`./mvnw -B test` → BUILD SUCCESS, 92 tests, 0 failures** (2026-09-28).
-11. Helm: ConfigMap + gateway Deployment inject all `GATEWAY_URL_*` service URLs and optional `REDIS_URL`. Stretch apps (multimodal, kotlin-rag, harness, security-review) added to values. `helm template portfolio infra/helm/agentic-ai-portfolio --set gatewaySecurityApiKey=local-dry-run` succeeds.
-12. Docs BOM pin: `docs/multiagent-sdlc-loop.md` and live DESIGN.md stack notes updated to Boot 4.1.1 / Spring AI 2.0.1.
-13. Canvas historical banner added (2026-09-21; plan of record is this file).
-14. Secret-scan false positive fixed: CI now excludes root `*.md` (`:**/*.md` alone missed `TODO.md`).
-15. Public publish: `mlvpatel/spring-agentic-ai-portfolio` at **`67494a0`** (FF from `b964060`). CI run [`36391907928`](https://github.com/mlvpatel/spring-agentic-ai-portfolio/actions/runs/36391907928) **success** (secret scan + unit tests + gitleaks).
+8. CI: `.github/workflows/ci.yml` runs `./mvnw -B -DskipITs verify` + gitleaks. `.gitleaks.toml` allowlists only `TODO.md`.
+9. Community docs: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue/PR templates.
+10. Unit tests: **`./mvnw -B test` → BUILD SUCCESS, 115 tests, 0 failures** (2026-09-29).
+11. Helm: gateway Deployment injects downstream `*_API_KEY` env names and `REDIS_URL`. `helm template` dry-run succeeds.
+12. Docs BOM pin: Boot 4.1.1 / Spring AI 2.0.1 in design docs.
+13. Review fixes + ponytail shrink: shared `ApiKeyAuthFilter` / `ApiKeyProperties` / auto-config; `RemoteToolClient` timeouts; `GatewayFilterStartupValidator`; `DownstreamCredentialMapper` fallbacks; kotlin-rag `valid-test-token` rejection; `ApiKeyAuthFilterTest`.
+14. P2 vector retrieval: under `pgvector` (or `design.rag.vector-retrieval=true`), hashing embeddings + real cosine via `InMemoryCosineVectorStore`. Empty corpus refuses; matching snippet returned (unit + Spring tests). Compose `--profile pgvector` starts Postgres for JDBC.
+15. P8 kotlin-rag: same cosine path behind `kotlin.rag.vector-retrieval` / `pgvector`.
+
+Prior public tip before this publish: **`a43f8e4`**. CI on older `67494a0`: [36391907928](https://github.com/mlvpatel/spring-agentic-ai-portfolio/actions/runs/36391907928) success.
 
 ---
 
-## Pending
+## Pending / skipped
 
-1. Docker stress re-run: **skipped 2026-09-28** — Docker daemon down (`docker info` failed). Prior numbers remain in `docs/stress-results.md` (2026-09-24). Re-run when daemon is up; do not invent latency.
+1. Full Docker stress re-run against a live compose stack: daemon was up on 2026-09-29, but no containers were running at verify time. Numbers in `docs/stress-results.md` remain the 2026-09-24 sample unless a new sample is appended after `docker compose up`. Do not invent latency.
+2. True pgvector Postgres + Spring AI EmbeddingModel / Testcontainers path: skipped as heavy; in-memory cosine store covers retrieval tests without Docker. JDBC Postgres still available under `--profile pgvector`.
 
-Out of scope for this plan: cloud cluster deploy, image registry publish, and production Kubernetes. Local compose and `helm template` dry-run are enough.
+Out of scope: cloud cluster deploy, image registry publish, production Kubernetes.
 
 ---
 
@@ -40,10 +43,10 @@ Out of scope for this plan: cloud cluster deploy, image registry publish, and pr
 
 | Remote | Repo | Role |
 |---|---|---|
-| `origin` | `mlvpatel/Agentic-AI-Expert-Portfolio` | Private / local history (`f9d069` line). Left alone. |
-| `public` | `mlvpatel/spring-agentic-ai-portfolio` | Publish line. Base was `b964060`; new commits push here without force. |
+| `origin` | `mlvpatel/Agentic-AI-Expert-Portfolio` | Private / local history. Left alone. |
+| `public` | `mlvpatel/spring-agentic-ai-portfolio` | Publish line. Commits go on top of public main; no force-push. |
 
-Do not force-push public main. Do not publish `.cursor/`, `AGENTS.md`, `CLAUDE.md`, `.env`, `*.p12`, `*.pem`, or `archive/`.
+Do not force-push public main. Do not publish `.cursor/`, `AGENTS.md`, `CLAUDE.md`, `.env`, `*.p12`, `*.pem`, `.planning/`, or `archive/`.
 
 ---
 
@@ -53,7 +56,7 @@ None for the open-source goal.
 
 Notes (not blockers):
 
-- Older run [`35934273926`](https://github.com/mlvpatel/spring-agentic-ai-portfolio/actions/runs/35934273926) failed on private-repo Actions billing. The repo is public now.
+- Older run [35934273926](https://github.com/mlvpatel/spring-agentic-ai-portfolio/actions/runs/35934273926) failed on private-repo Actions billing. The repo is public now.
 - Cloud/cluster production deploy is intentionally dropped.
 
 ---

@@ -90,6 +90,31 @@ class AiEdgeGatewayApplicationTest {
         filter.filter(exchange, mutated -> {
             chainInvoked[0] = true;
             assertThat(mutated.getRequest().getHeaders().getFirst("X-Authenticated-User")).isEqualTo("api-client");
+            // No alias match → fallback to gateway key
+            assertThat(mutated.getRequest().getHeaders().getFirst("X-API-Key"))
+                    .isEqualTo("test-gateway-api-key-for-unit-tests-only");
+            assertThat(mutated.getRequest().getHeaders().getFirst("Authorization")).isNull();
+            return Mono.empty();
+        }).block();
+        assertThat(chainInvoked[0]).isTrue();
+    }
+
+    @Test
+    @DisplayName("Auth remaps X-API-Key to per-service downstream secret")
+    void authFilterRemapsDownstreamApiKey() {
+        var filter = authFilterFactory.apply(new ApiKeyAuthGatewayFilterFactory.Config());
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+                MockServerHttpRequest.get("/api/v1/patch")
+                        .header("X-API-Key", "test-gateway-api-key-for-unit-tests-only")
+                        .header("Authorization", "Bearer leftover-client-token")
+                        .build());
+        boolean[] chainInvoked = {false};
+        filter.filter(exchange, mutated -> {
+            chainInvoked[0] = true;
+            assertThat(mutated.getRequest().getHeaders().getFirst("X-API-Key"))
+                    .isEqualTo("test-yagni-downstream-key");
+            assertThat(mutated.getRequest().getHeaders().getFirst("Authorization")).isNull();
+            assertThat(mutated.getRequest().getHeaders().getFirst("X-Authenticated-User")).isEqualTo("api-client");
             return Mono.empty();
         }).block();
         assertThat(chainInvoked[0]).isTrue();

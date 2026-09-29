@@ -12,15 +12,7 @@ Catalog **S3** · internal port `8093` · Offline contract vs observed.
 
 ## Container view
 
-```mermaid
-C4Container
-  title AI validated integration harness
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "ai-validated-integration-harness", "Spring Boot", "Offline contract vs observed")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /api/v1/validate")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Run
 

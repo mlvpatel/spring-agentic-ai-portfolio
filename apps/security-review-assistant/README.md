@@ -12,15 +12,7 @@ Catalog **S4** · internal port `8094` · Authorized checklist review only.
 
 ## Container view
 
-```mermaid
-C4Container
-  title Security review assistant
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "security-review-assistant", "Spring Boot", "Authorized checklist review only")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /api/v1/review")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Run
 

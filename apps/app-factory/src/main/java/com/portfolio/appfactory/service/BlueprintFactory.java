@@ -46,7 +46,7 @@ public class BlueprintFactory {
         files.put("README.md", "# " + safe + "\n\nGenerated from blueprint " + blueprintId + " (offline).\n");
         files.put("docker-compose.yml", "services:\n  app:\n    image: eclipse-temurin:21-jre\n");
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("mode", "offline");
+        out.put("mode", portfolioAiClient.isLive() ? "live" : "offline");
         out.put("blueprint", blueprintId);
         out.put("appName", safe);
         out.put("files", files);

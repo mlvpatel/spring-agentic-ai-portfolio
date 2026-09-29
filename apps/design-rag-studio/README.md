@@ -5,6 +5,13 @@
 
 Catalog **P2** · internal port `8082` · JDBC/H2 token corpus; refuse if empty.
 
+
+## Retrieval
+
+Default profile uses H2 + SQL `LIKE`. With Spring profile `pgvector` (or `design.rag.vector-retrieval=true`),
+ingest also fills an in-memory hashing-embedding index and `retrieve` ranks by real cosine similarity.
+Compose `--profile pgvector` (alias of `postgres`) starts Postgres for JDBC; unit tests do not need Docker for the vector path.
+
 ## Use cases
 
 - Ingest CSV tokens then generate a stack snippet
@@ -12,15 +19,7 @@ Catalog **P2** · internal port `8082` · JDBC/H2 token corpus; refuse if empty.
 
 ## Container view
 
-```mermaid
-C4Container
-  title Design token RAG
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "design-rag-studio", "Spring Boot", "JDBC/H2 token corpus; refuse if empty")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /svc/design-rag-studio/api/v1/ingest|generate")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Run
 

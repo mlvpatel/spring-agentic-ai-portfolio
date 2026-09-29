@@ -53,11 +53,11 @@ public class PaperLabService {
         if (count == null || count == 0) {
             throw new IllegalArgumentException("ingest papers first");
         }
-        String q = "%" + topic.toLowerCase(Locale.ROOT) + "%";
+        String q = "%" + escapeLike(topic.toLowerCase(Locale.ROOT)) + "%";
         List<Map<String, String>> cites = jdbc.query(
                 """
                 SELECT id, title, body_text FROM papers
-                WHERE LOWER(title) LIKE ? OR LOWER(body_text) LIKE ?
+                WHERE LOWER(title) LIKE ? ESCAPE '\\' OR LOWER(body_text) LIKE ? ESCAPE '\\'
                 LIMIT 3
                 """,
                 (rs, i) -> Map.of(
@@ -96,5 +96,12 @@ public class PaperLabService {
     private String mode() {
         return Arrays.asList(environment.getActiveProfiles()).contains("pgvector")
                 ? "jdbc-postgres" : "jdbc-h2";
+    }
+
+    static String escapeLike(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        return raw.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 }

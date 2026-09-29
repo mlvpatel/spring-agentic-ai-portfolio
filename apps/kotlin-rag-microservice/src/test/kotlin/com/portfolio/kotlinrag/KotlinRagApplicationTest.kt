@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -56,6 +57,17 @@ class KotlinRagApplicationTest @Autowired constructor(
     }
 
     @Test
+    @DisplayName("Rejects valid-test-token bypass")
+    fun rejectsValidTestToken() {
+        mockMvc.perform(
+            post("/api/v1/ingest")
+                .header("Authorization", "Bearer valid-test-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"title":"t","text":"x"}""")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
     @DisplayName("Empty corpus query refuses")
     fun emptyCorpusRefuses() {
         corpus.clear()
@@ -93,5 +105,52 @@ class KotlinRagApplicationTest @Autowired constructor(
             .andExpect(jsonPath("$.mode").value("offline"))
             .andExpect(jsonPath("$.hits").isArray)
             .andExpect(jsonPath("$.refused").value(false))
+    }
+}
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@TestPropertySource(properties = [
+    "kotlin.rag.vector-retrieval=true",
+    "app.security.api-key=test-kotlin-rag-api-key-for-unit-tests-only",
+])
+class KotlinRagVectorRetrievalTest @Autowired constructor(
+    private val mockMvc: MockMvc,
+    private val corpus: com.portfolio.kotlinrag.service.CorpusService,
+) {
+    private val key = "test-kotlin-rag-api-key-for-unit-tests-only"
+
+    @Test
+    @DisplayName("Vector path refuses empty corpus and returns known snippet")
+    fun vectorEmptyAndMatch() {
+        corpus.clear()
+        mockMvc.perform(
+            post("/api/v1/query")
+                .header("X-API-Key", key)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"q":"citations"}""")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.refused").value(true))
+            .andExpect(jsonPath("$.mode").value("vector-offline"))
+
+        mockMvc.perform(
+            post("/api/v1/ingest")
+                .header("X-API-Key", key)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"title":"RAG notes","text":"vector retrieval with citations"}""")
+        ).andExpect(status().isOk)
+
+        mockMvc.perform(
+            post("/api/v1/query")
+                .header("X-API-Key", key)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"q":"citations vector"}""")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.refused").value(false))
+            .andExpect(jsonPath("$.mode").value("vector-offline"))
+            .andExpect(jsonPath("$.hits[0].title").value("RAG notes"))
+            .andExpect(jsonPath("$.hits[0].score").exists())
     }
 }

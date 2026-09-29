@@ -12,15 +12,7 @@ Catalog **S2** · internal port `8092` · In-memory corpus; refuse when empty.
 
 ## Container view
 
-```mermaid
-C4Container
-  title Kotlin RAG microservice
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "kotlin-rag-microservice", "Spring Boot", "In-memory corpus; refuse when empty")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /api/v1/query (ingest via /svc/kotlin-rag-microservice/...)")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Run
 

@@ -12,15 +12,7 @@ Catalog **S1** · internal port `8091` · Offline triage with image meta.
 
 ## Container view
 
-```mermaid
-C4Container
-  title Multimodal support desk
-  Person(user, "Caller")
-  Container(gw, "ai-edge-gateway", "Gateway", "Auth + route")
-  Container(app, "multimodal-support-desk", "Spring Boot", "Offline triage with image meta")
-  Rel(user, gw, "X-API-Key")
-  Rel(gw, app, "POST /api/v1/triage")
-```
+See the portfolio [C4 diagrams in the root README](../../README.md#architecture-c4).
 
 ## Run
 

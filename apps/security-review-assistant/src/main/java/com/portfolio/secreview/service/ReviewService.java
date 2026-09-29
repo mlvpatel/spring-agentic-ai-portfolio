@@ -36,7 +36,7 @@ public class ReviewService {
             findings.add("No explicit auth mention in scope artifact");
         }
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("mode", "offline");
+        out.put("mode", portfolioAiClient.isLive() ? "live" : "offline");
         out.put("scope", scope.strip());
         out.put("findings", findings);
         out.put("status", findings.isEmpty() ? "clean" : "needs-review");
