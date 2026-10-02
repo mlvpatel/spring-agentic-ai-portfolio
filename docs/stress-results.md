@@ -1,5 +1,35 @@
 # Stress results
 
+## 2026-10-03 sample
+
+Laptop Docker Desktop sample against `ai-edge-gateway` on host port 8080. Started 2026-10-03 00:24 +0200 (`2026-10-02T22:24Z`).
+Method: `scripts/run-stress-accuracy.sh`, 50 concurrent `curl` requests (`xargs -P 50`). API key from gitignored `infra/compose/.env` (not printed). Not a certified benchmark.
+Stack: `docker compose -f infra/compose/docker-compose.yml --env-file .env up -d --build`, then the script, then `docker compose down`.
+
+Accuracy is the script's single checked request. The success columns are the 50-way burst.
+
+| app | accuracy | auth missing/ey*/valid-test-token | success | success rate | errors | p50 ms | p95 ms | happy HTTP |
+|---|---|---|---|---|---|---|---|---|
+| `yagni-copilot` | PASS | 401/401/401 | 49/50 | 98% | 1/50 | 44 | 94 | 200 |
+| `design-rag-studio` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 39 | 134 | 200 |
+| `design-rag-empty` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 26 | 33 | 200 |
+| `quality-gate` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 17 | 23 | 200 |
+| `quality-gate-secret` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 22 | 31 | 200 |
+| `spec-orchestrator` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 31 | 49 | 200 |
+| `agent-observability` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 19 | 32 | 200 |
+| `mcp-broker` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 37 | 49 | 200 |
+| `app-factory` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 32 | 44 | 200 |
+| `paper-algorithm-lab` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 52 | 78 | 200 |
+| `system-architect` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 39 | 51 | 200 |
+| `ai-edge-gateway` | PASS | 401/401/401 | 49/50 | 98% | 1/50 | 35 | 48 | 200 |
+| `multimodal-support-desk` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 42 | 65 | 200 |
+| `kotlin-rag-empty` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 64 | 98 | 200 |
+| `kotlin-rag-microservice` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 35 | 59 | 200 |
+| `ai-validated-integration-harness` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 19 | 35 | 200 |
+| `security-review-assistant` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 32 | 50 | 200 |
+
+The two errors were HTTP 500 on `POST /api/v1/patch` during the burst (`{"status":500,"error":"Internal Server Error","path":"/api/v1/patch"}`), one in the yagni-copilot case at `2026-10-02T22:24:29.989Z` and one in the gateway case at `2026-10-02T22:26:21.783Z`. Each case's accuracy request was HTTP 200. The other fifteen routes were 50/50.
+
 ## 2026-09-29 attempt
 
 Docker daemon was reachable (`docker info` succeeded). No compose services were running (`docker compose ps` empty; `localhost:8080` not answering). Skipped inventing latency. Prior 2026-09-24 sample below is unchanged. Re-run `scripts/run-stress-accuracy.sh` after `docker compose -f infra/compose/docker-compose.yml --env-file .env up -d --build`.

@@ -6,6 +6,7 @@ Cross-cutting pieces for the Servlet apps:
 
 - `ApiError` / `GlobalExceptionHandler` (auto-config)
 - `PortfolioAiClient` (offline by default; uses Spring AI `ChatClient` only when a `ChatModel` bean exists and `OPENAI_API_KEY` is set)
+- `PortfolioEmbeddingClient` (hashing by default; uses Spring AI `EmbeddingModel` only when that bean exists and `OPENAI_API_KEY` is set)
 
 No API keys in this module. No default Bearer bypasses.
 

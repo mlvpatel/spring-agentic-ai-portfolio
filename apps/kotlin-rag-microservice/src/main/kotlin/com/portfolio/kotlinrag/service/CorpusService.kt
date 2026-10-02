@@ -1,6 +1,7 @@
 package com.portfolio.kotlinrag.service
 
 import com.portfolio.shared.ai.PortfolioAiClient
+import com.portfolio.shared.ai.PortfolioEmbeddingClient
 import com.portfolio.shared.rag.HashingTextEmbedder
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
@@ -10,6 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 class CorpusService(
     private val portfolioAiClient: PortfolioAiClient,
     private val environment: Environment,
+    private val embeddings: PortfolioEmbeddingClient,
 ) {
     private fun mode(): String = when {
         portfolioAiClient.isLive -> "live"
@@ -24,13 +26,12 @@ class CorpusService(
     private data class Doc(val title: String, val text: String, val vector: FloatArray)
 
     private val docs = CopyOnWriteArrayList<Doc>()
-    private val embedder = HashingTextEmbedder(64)
 
     fun ingest(title: String, text: String): Map<String, Any> {
         require(title.isNotBlank() && text.isNotBlank()) { "title and text required" }
         val t = title.trim()
         val body = text.trim()
-        docs += Doc(t, body, embedder.embed("$t $body"))
+        docs += Doc(t, body, embeddings.embed("$t $body"))
         return mapOf("mode" to mode(), "size" to docs.size, "title" to t)
     }
 
@@ -75,7 +76,7 @@ class CorpusService(
     }
 
     private fun cosineHits(q: String): List<Map<String, Any>> {
-        val qv = embedder.embed(q)
+        val qv = embeddings.embed(q)
         return docs
             .map { d -> Triple(d, HashingTextEmbedder.dotProduct(qv, d.vector), d.text.take(120)) }
             .sortedByDescending { it.second }

@@ -1,6 +1,7 @@
 package com.portfolio.designrag.service;
 
 import com.portfolio.shared.rag.HashingTextEmbedder;
+import com.portfolio.shared.rag.TextEmbedder;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,10 +15,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public final class InMemoryCosineVectorStore {
 
-    private final HashingTextEmbedder embedder;
+    private final TextEmbedder embedder;
     private final CopyOnWriteArrayList<Entry> entries = new CopyOnWriteArrayList<>();
 
-    public InMemoryCosineVectorStore(HashingTextEmbedder embedder) {
+    public InMemoryCosineVectorStore(TextEmbedder embedder) {
         this.embedder = embedder;
     }
 

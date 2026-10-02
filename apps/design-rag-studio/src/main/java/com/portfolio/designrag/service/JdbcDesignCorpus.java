@@ -1,5 +1,6 @@
 package com.portfolio.designrag.service;
 
+import com.portfolio.shared.ai.PortfolioEmbeddingClient;
 import com.portfolio.shared.rag.HashingTextEmbedder;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,8 @@ import java.util.Locale;
 /**
  * Live JDBC corpus. Default uses embedded H2 (no paid key).
  * Profile {@code pgvector} points the datasource at Postgres (compose) and switches
- * retrieve() to in-memory cosine ranking over hashing embeddings (no Docker needed in tests).
+ * retrieve() to in-memory cosine ranking. Offline vectors are hashing embeddings.
+ * A set API key plus spring.ai.model.embedding=openai uses Spring AI instead.
  */
 @Component
 public class JdbcDesignCorpus {
@@ -24,11 +26,11 @@ public class JdbcDesignCorpus {
     private final InMemoryCosineVectorStore vectorStore;
 
     @Autowired
-    public JdbcDesignCorpus(JdbcTemplate jdbc, Environment environment) {
+    public JdbcDesignCorpus(JdbcTemplate jdbc, Environment environment, PortfolioEmbeddingClient embeddings) {
         this.jdbc = jdbc;
         this.vectorRetrieval = Arrays.asList(environment.getActiveProfiles()).contains("pgvector")
                 || Boolean.parseBoolean(environment.getProperty("design.rag.vector-retrieval", "false"));
-        this.vectorStore = new InMemoryCosineVectorStore(new HashingTextEmbedder(64));
+        this.vectorStore = new InMemoryCosineVectorStore(embeddings);
     }
 
     /** Test/helper constructor. */

@@ -4,7 +4,7 @@ package com.portfolio.shared.rag;
  * Deterministic bag-of-hashed-tokens embedder. No network; used for offline
  * retrieval tests and local cosine ranking. Vectors are L2-normalized.
  */
-public final class HashingTextEmbedder {
+public final class HashingTextEmbedder implements TextEmbedder {
 
     private final int dimensions;
 
