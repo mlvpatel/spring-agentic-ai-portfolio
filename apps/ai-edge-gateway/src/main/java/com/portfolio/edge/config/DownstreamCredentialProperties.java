@@ -6,22 +6,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Per-service backend API keys and path aliases used after gateway auth succeeds.
- * Empty values fall back to {@code gateway.security.apiKey} (shared-key mode).
+ * Path aliases used after gateway auth succeeds.
+ * Per-service keys stay in {@code gateway.downstream.keys} and are read from the environment.
+ * An empty key falls back to {@code gateway.security.apiKey} (shared-key mode).
  */
 @ConfigurationProperties(prefix = "gateway.downstream")
 public class DownstreamCredentialProperties {
 
-    private Map<String, String> keys = new LinkedHashMap<>();
     private Map<String, String> aliases = new LinkedHashMap<>();
-
-    public Map<String, String> getKeys() {
-        return keys;
-    }
-
-    public void setKeys(Map<String, String> keys) {
-        this.keys = keys != null ? keys : new LinkedHashMap<>();
-    }
 
     public Map<String, String> getAliases() {
         return aliases;

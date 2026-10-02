@@ -9,18 +9,12 @@ metadata:
     app.kubernetes.io/name: {{ $svc.name }}
     app.kubernetes.io/component: microservice
 spec:
-  {{- if not $svc.autoscaling.enabled }}
   replicas: {{ $svc.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ $svc.name }}
   template:
     metadata:
-      annotations:
-        prometheus.io/scrape: {{ $.Values.monitoring.prometheus.scrape | quote }}
-        prometheus.io/path: {{ $.Values.monitoring.prometheus.path | quote }}
-        prometheus.io/port: {{ $svc.port | quote }}
       labels:
         {{- include "agentic-ai-portfolio.labels" $ | nindent 8 }}
         app.kubernetes.io/name: {{ $svc.name }}

@@ -10,11 +10,31 @@ import java.util.Map;
 
 /**
  * Maps an inbound gateway path to the backend API key that should be forwarded.
- * Path aliases come from {@code gateway.downstream.aliases} (YAML override);
- * known route aliases fill gaps when binding is empty or incomplete.
+ * CR-01 path aliases are the static fallback. {@code gateway.downstream.aliases}
+ * overrides a path when that alias is set.
  */
 @Component
 public class DownstreamCredentialMapper {
+
+    private static final Map<String, String> FALLBACK_ALIASES = Map.ofEntries(
+            Map.entry("/api/v1/patch", "yagni-copilot"),
+            Map.entry("/api/v1/gate", "quality-gate"),
+            Map.entry("/api/v1/runs", "spec-orchestrator"),
+            Map.entry("/api/v1/trajectories", "agent-observability"),
+            Map.entry("/api/v1/analyze", "agent-observability"),
+            Map.entry("/api/v1/tools", "mcp-broker"),
+            Map.entry("/api/v1/invoke", "mcp-broker"),
+            Map.entry("/api/v1/blueprints", "app-factory"),
+            Map.entry("/api/v1/papers", "paper-algorithm-lab"),
+            Map.entry("/api/v1/synthesize", "paper-algorithm-lab"),
+            Map.entry("/api/v1/architect", "system-architect"),
+            Map.entry("/api/v1/triage", "multimodal-support-desk"),
+            Map.entry("/api/v1/query", "kotlin-rag-microservice"),
+            Map.entry("/api/v1/validate", "ai-validated-integration-harness"),
+            Map.entry("/api/v1/review", "security-review-assistant"),
+            Map.entry("/api/v1/design-rag", "design-rag-studio"),
+            Map.entry("/api/v1/app-factory", "app-factory"),
+            Map.entry("/api/v1/kotlin-rag", "kotlin-rag-microservice"));
 
     private final Environment environment;
     private final String fallbackApiKey;
@@ -26,39 +46,19 @@ public class DownstreamCredentialMapper {
             @Value("${gateway.security.apiKey:}") String fallbackApiKey) {
         this.environment = environment;
         this.fallbackApiKey = fallbackApiKey == null ? "" : fallbackApiKey;
-        this.aliases = new LinkedHashMap<>();
+        this.aliases = new LinkedHashMap<>(FALLBACK_ALIASES);
         if (properties.getAliases() != null) {
-            this.aliases.putAll(properties.getAliases());
-        }
-        // Hard guarantees for unique path aliases even if YAML map binding is empty.
-        putIfAbsent(this.aliases, "/api/v1/patch", "yagni-copilot");
-        putIfAbsent(this.aliases, "/api/v1/gate", "quality-gate");
-        putIfAbsent(this.aliases, "/api/v1/runs", "spec-orchestrator");
-        putIfAbsent(this.aliases, "/api/v1/trajectories", "agent-observability");
-        putIfAbsent(this.aliases, "/api/v1/analyze", "agent-observability");
-        putIfAbsent(this.aliases, "/api/v1/tools", "mcp-broker");
-        putIfAbsent(this.aliases, "/api/v1/invoke", "mcp-broker");
-        putIfAbsent(this.aliases, "/api/v1/blueprints", "app-factory");
-        putIfAbsent(this.aliases, "/api/v1/papers", "paper-algorithm-lab");
-        putIfAbsent(this.aliases, "/api/v1/synthesize", "paper-algorithm-lab");
-        putIfAbsent(this.aliases, "/api/v1/architect", "system-architect");
-        putIfAbsent(this.aliases, "/api/v1/triage", "multimodal-support-desk");
-        putIfAbsent(this.aliases, "/api/v1/query", "kotlin-rag-microservice");
-        putIfAbsent(this.aliases, "/api/v1/validate", "ai-validated-integration-harness");
-        putIfAbsent(this.aliases, "/api/v1/review", "security-review-assistant");
-        putIfAbsent(this.aliases, "/api/v1/design-rag", "design-rag-studio");
-        putIfAbsent(this.aliases, "/api/v1/app-factory", "app-factory");
-        putIfAbsent(this.aliases, "/api/v1/kotlin-rag", "kotlin-rag-microservice");
-    }
-
-    private static void putIfAbsent(Map<String, String> map, String key, String value) {
-        // Prefer YAML (possibly bracket-keyed); only fill when that path is absent.
-        for (String existing : map.keySet()) {
-            if (normalizeAliasPath(existing).equals(key)) {
-                return;
+            for (Map.Entry<String, String> entry : properties.getAliases().entrySet()) {
+                if (entry.getKey() == null || entry.getKey().isBlank()) {
+                    continue;
+                }
+                String path = entry.getKey().trim();
+                if (!path.startsWith("/")) {
+                    path = "/" + path;
+                }
+                this.aliases.put(path, entry.getValue());
             }
         }
-        map.putIfAbsent(key, value);
     }
 
     public String resolveDownstreamApiKey(String path) {
@@ -87,23 +87,11 @@ public class DownstreamCredentialMapper {
             return slash < 0 ? rest : rest.substring(0, slash);
         }
         for (Map.Entry<String, String> entry : aliases.entrySet()) {
-            String aliasPath = normalizeAliasPath(entry.getKey());
+            String aliasPath = entry.getKey();
             if (normalized.equals(aliasPath) || normalized.startsWith(aliasPath + "/")) {
                 return entry.getValue();
             }
         }
         return null;
-    }
-
-    private static String normalizeAliasPath(String key) {
-        if (key == null || key.isBlank()) {
-            return "/";
-        }
-        String aliasPath = key.trim();
-        // Spring map binding may keep bracket form "[/api/v1/x]" for slash keys.
-        if (aliasPath.length() >= 2 && aliasPath.startsWith("[") && aliasPath.endsWith("]")) {
-            aliasPath = aliasPath.substring(1, aliasPath.length() - 1);
-        }
-        return aliasPath.startsWith("/") ? aliasPath : "/" + aliasPath;
     }
 }

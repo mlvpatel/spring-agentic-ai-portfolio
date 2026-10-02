@@ -1,5 +1,6 @@
 package com.portfolio.designrag.service;
 
+import com.portfolio.shared.rag.HashingTextEmbedder;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;

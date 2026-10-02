@@ -15,8 +15,6 @@ gateway:
   downstream:
     keys:
       yagni-copilot: test-yagni-downstream-key
-    aliases:
-      "[/api/v1/patch]": yagni-copilot
   rateLimiter:
     replenishRate: 100
     burstCapacity: 200

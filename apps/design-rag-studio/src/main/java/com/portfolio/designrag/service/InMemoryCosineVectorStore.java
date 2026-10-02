@@ -1,5 +1,7 @@
 package com.portfolio.designrag.service;
 
+import com.portfolio.shared.rag.HashingTextEmbedder;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -53,14 +55,7 @@ public final class InMemoryCosineVectorStore {
     }
 
     static double cosine(float[] a, float[] b) {
-        if (a.length != b.length) {
-            throw new IllegalArgumentException("vector length mismatch");
-        }
-        double dot = 0;
-        for (int i = 0; i < a.length; i++) {
-            dot += (double) a[i] * b[i];
-        }
-        return dot;
+        return HashingTextEmbedder.dotProduct(a, b);
     }
 
     public record ScoredToken(TokenDoc doc, double score) {

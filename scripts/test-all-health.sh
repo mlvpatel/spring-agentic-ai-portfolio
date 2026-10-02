@@ -59,6 +59,6 @@ for svc in "${SERVICES[@]}"; do
 done
 
 echo "================================================================="
-echo "Host publishes (compose): gateway :8080, prometheus :9090, grafana :3000."
+echo "Host publishes (compose): gateway :8080."
 echo "Agent containers stay on agentic-network only (internal 8081–8089)."
 echo "================================================================="

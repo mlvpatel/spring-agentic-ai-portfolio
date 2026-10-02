@@ -204,25 +204,6 @@ gateway:
       kotlin-rag-microservice: ${KOTLIN_RAG_API_KEY:}
       ai-validated-integration-harness: ${AI_HARNESS_API_KEY:}
       security-review-assistant: ${SECURITY_REVIEW_API_KEY:}
-    aliases:
-      "[/api/v1/patch]": yagni-copilot
-      "[/api/v1/gate]": quality-gate
-      "[/api/v1/runs]": spec-orchestrator
-      "[/api/v1/trajectories]": agent-observability
-      "[/api/v1/analyze]": agent-observability
-      "[/api/v1/tools]": mcp-broker
-      "[/api/v1/invoke]": mcp-broker
-      "[/api/v1/blueprints]": app-factory
-      "[/api/v1/papers]": paper-algorithm-lab
-      "[/api/v1/synthesize]": paper-algorithm-lab
-      "[/api/v1/architect]": system-architect
-      "[/api/v1/triage]": multimodal-support-desk
-      "[/api/v1/query]": kotlin-rag-microservice
-      "[/api/v1/validate]": ai-validated-integration-harness
-      "[/api/v1/review]": security-review-assistant
-      "[/api/v1/design-rag]": design-rag-studio
-      "[/api/v1/app-factory]": app-factory
-      "[/api/v1/kotlin-rag]": kotlin-rag-microservice
   rateLimiter:
     replenishRate: 100
     burstCapacity: 200

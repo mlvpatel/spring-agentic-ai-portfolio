@@ -1,7 +1,7 @@
-package com.portfolio.designrag.service;
+package com.portfolio.shared.rag;
 
 /**
- * Deterministic bag-of-hashed-tokens embedder. No network; used for offline/pgvector
+ * Deterministic bag-of-hashed-tokens embedder. No network; used for offline
  * retrieval tests and local cosine ranking. Vectors are L2-normalized.
  */
 public final class HashingTextEmbedder {
@@ -33,7 +33,19 @@ public final class HashingTextEmbedder {
         return l2Normalize(v);
     }
 
-    static float[] l2Normalize(float[] v) {
+    /** Dot product. Cosine of two L2-normalized vectors is this value. */
+    public static double dotProduct(float[] a, float[] b) {
+        if (a.length != b.length) {
+            throw new IllegalArgumentException("vector length mismatch");
+        }
+        double dot = 0;
+        for (int i = 0; i < a.length; i++) {
+            dot += (double) a[i] * b[i];
+        }
+        return dot;
+    }
+
+    private static float[] l2Normalize(float[] v) {
         double sum = 0;
         for (float x : v) {
             sum += (double) x * x;

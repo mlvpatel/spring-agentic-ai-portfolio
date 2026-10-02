@@ -1,7 +1,7 @@
 # Prod-oriented stack: builds app images from jars (run ./mvnw -DskipTests package first).
 # Fast jar-mount override: docker compose -f docker-compose.yml -f docker-compose.dev.yml ...
 # Optional: --profile postgres|pgvector (P2/P8 JDBC), --profile tls (nginx :8443).
-# Copy .env.example → .env and set GATEWAY_SECURITY_APIKEY + GRAFANA_ADMIN_PASSWORD.
+# Copy .env.example → .env and set GATEWAY_SECURITY_APIKEY.
 
 x-app-build: &app-build
   context: ../..
@@ -295,36 +295,6 @@ services:
       - ../certs:/etc/certs:ro
     depends_on:
       - ai-edge-gateway
-    networks:
-      - agentic-network
-
-  prometheus:
-    image: prom/prometheus:v2.53.0
-    ports:
-      - "9090:9090"
-    volumes:
-      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.enable-lifecycle'
-    networks:
-      - agentic-network
-
-  grafana:
-    image: grafana/grafana:10.4.5
-    ports:
-      - "3000:3000"
-    environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in the environment — no demo default}
-      GF_USERS_ALLOW_SIGN_UP: "false"
-    volumes:
-      - ../monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
-      - ../monitoring/grafana/provisioning/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
-      - ../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
-    depends_on:
-      - prometheus
     networks:
       - agentic-network
 

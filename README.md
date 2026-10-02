@@ -62,7 +62,7 @@ C4Container
 | S3 | [ai-validated-integration-harness](apps/ai-validated-integration-harness/) | 8093 | `POST /api/v1/validate` |
 | S4 | [security-review-assistant](apps/security-review-assistant/) | 8094 | `POST /api/v1/review` |
 
-Shared library: [libs/shared](libs/shared/). Infra: [infra/](infra/) (compose, helm, monitoring).
+Shared library: [libs/shared](libs/shared/). Infra: [infra/](infra/) (compose, helm).
 
 Bare `/api/v1/generate` and `/api/v1/ingest` are not routed (no catch-all). Use the unique aliases above or `/svc/<app>/api/v1/...`.
 
@@ -71,7 +71,7 @@ Bare `/api/v1/generate` and `/api/v1/ingest` are not routed (no catch-all). Use 
 ```bash
 ./mvnw -DskipTests package
 cp infra/compose/.env.example infra/compose/.env
-# set GATEWAY_SECURITY_APIKEY and GRAFANA_ADMIN_PASSWORD
+# set GATEWAY_SECURITY_APIKEY
 cd infra/compose
 # Prod image build (Redis included; P2/P8 use H2 until Postgres profile is on):
 docker compose -f docker-compose.yml --env-file .env up -d --build

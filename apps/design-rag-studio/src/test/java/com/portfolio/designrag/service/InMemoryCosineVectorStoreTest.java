@@ -1,5 +1,6 @@
 package com.portfolio.designrag.service;
 
+import com.portfolio.shared.rag.HashingTextEmbedder;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

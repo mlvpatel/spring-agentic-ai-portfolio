@@ -24,12 +24,6 @@ ingress:
       hosts:
         - agentic-ai.internal
 
-monitoring:
-  enabled: true
-  prometheus:
-    scrape: "true"
-    path: "/actuator/prometheus"
-
 # Required at install time (no chart defaults that look like real keys).
 gatewaySecurityApiKey: ""
 # Optional Redis for gateway rate limiting (empty = in-memory).
@@ -64,11 +58,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8081
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -87,11 +76,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8082
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -110,11 +94,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8083
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -133,11 +112,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8084
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -156,11 +130,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8085
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -179,11 +148,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8086
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -202,11 +166,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8087
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -225,11 +184,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8088
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -248,11 +202,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8089
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -271,11 +220,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8091
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -294,11 +238,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8092
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -317,11 +256,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8093
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -340,11 +274,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8094
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 75
     resources:
       requests:
         cpu: 250m
@@ -361,11 +290,6 @@ services:
       tag: 1.0.0-SNAPSHOT
     port: 8080
     replicaCount: 1
-    autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 70
     resources:
       requests:
         cpu: 250m

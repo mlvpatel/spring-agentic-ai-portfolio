@@ -7,7 +7,6 @@ Ops topology for the live `apps/*` products. Application code stays under `apps/
 | `compose/` | Docker Compose (prod image build, dev jar-mount override, optional Postgres/TLS) |
 | `docker/` | Parameterized `Dockerfile.app` (repo-root build context + `JAR_FILE` arg) |
 | `helm/` | Kubernetes chart for the same services |
-| `monitoring/` | Prometheus and Grafana configs for compose DNS names |
 | `scripts/` | Dev TLS cert helper (`generate-dev-certs.sh`) |
 | `certs/` | Gitignored PEM output for the `tls` compose profile |
 
@@ -27,7 +26,7 @@ Build jars first from the repo root: `./mvnw -DskipTests package`.
 
 ### Environment
 
-Copy `compose/.env.example` to `compose/.env` (gitignored). Required: `GATEWAY_SECURITY_APIKEY`, `GRAFANA_ADMIN_PASSWORD`. No demo defaults for those.
+Copy `compose/.env.example` to `compose/.env` (gitignored). Required: `GATEWAY_SECURITY_APIKEY`. No demo default for that.
 
 - `REDIS_URL` defaults to `redis://redis:6379` in compose; the gateway uses Redis rate limiting when that URL is set, otherwise an in-memory bucket (tests).
 - `OIDC_ISSUER_URI` enables optional OIDC resource-server checks on the gateway when set.
