@@ -25,13 +25,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class YagniPatchService {
 
-    private final JavaParser javaParser;
     private final PortfolioAiClient portfolioAiClient;
 
     public YagniPatchService(PortfolioAiClient portfolioAiClient) {
-        ParserConfiguration config = new ParserConfiguration();
-        config.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21);
-        this.javaParser = new JavaParser(config);
         this.portfolioAiClient = portfolioAiClient;
     }
 
@@ -84,7 +80,11 @@ public class YagniPatchService {
     }
 
     private Metrics measure(String source) {
-        ParseResult<CompilationUnit> parsed = javaParser.parse(source);
+        // One JavaParser per call. The instance is not safe to share across requests.
+        ParserConfiguration config = new ParserConfiguration();
+        config.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21);
+        JavaParser parser = new JavaParser(config);
+        ParseResult<CompilationUnit> parsed = parser.parse(source);
         if (!parsed.isSuccessful() || parsed.getResult().isEmpty()) {
             int lines = (int) source.lines().filter(l -> !l.isBlank()).count();
             int heuristic = Math.max(1, lines / 10);

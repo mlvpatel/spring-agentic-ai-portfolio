@@ -30,6 +30,19 @@ Accuracy is the script's single checked request. The success columns are the 50-
 
 The two errors were HTTP 500 on `POST /api/v1/patch` during the burst (`{"status":500,"error":"Internal Server Error","path":"/api/v1/patch"}`), one in the yagni-copilot case at `2026-10-02T22:24:29.989Z` and one in the gateway case at `2026-10-02T22:26:21.783Z`. Each case's accuracy request was HTTP 200. The other fifteen routes were 50/50.
 
+## 2026-10-03 patch rerun
+
+After `YagniPatchService` stopped sharing one `JavaParser`. Docker Desktop was up. Started only `redis`, `yagni-copilot`, and `ai-edge-gateway` (`docker compose -f infra/compose/docker-compose.yml --env-file .env up -d --build redis yagni-copilot`, then the gateway with `--no-deps`). The other apps were not rebuilt. Method: 50 concurrent `curl` requests (`xargs -P 50`) to `POST /api/v1/patch` on `localhost:8080`, same body as the yagni row above. API key from gitignored `infra/compose/.env` (not printed). Recorded at `2026-10-02T22:51:57Z` (2026-10-03 00:51 +0200). Stack brought down afterward. Not a certified benchmark. The full-sample table above is unchanged.
+
+| check | result |
+|---|---|
+| accuracy | HTTP 200, `mode` offline |
+| auth missing/ey*/valid-test-token | 401/401/401 |
+| burst | 50/50 HTTP 200 |
+| errors | 0/50 |
+| p50 ms | 34 |
+| p95 ms | 50 |
+
 ## 2026-09-29 attempt
 
 Docker daemon was reachable (`docker info` succeeded). No compose services were running (`docker compose ps` empty; `localhost:8080` not answering). Skipped inventing latency. Prior 2026-09-24 sample below is unchanged. Re-run `scripts/run-stress-accuracy.sh` after `docker compose -f infra/compose/docker-compose.yml --env-file .env up -d --build`.

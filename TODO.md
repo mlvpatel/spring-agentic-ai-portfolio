@@ -23,11 +23,41 @@ Design-rag (P2) and kotlin-rag (P8) call Spring AI `EmbeddingModel` when `OPENAI
 
 ## Stress
 
-The 2026-10-03 sample is in `docs/stress-results.md`. Fifteen routes were 50/50. The yagni-copilot burst and the gateway `POST /api/v1/patch` burst each returned one HTTP 500 (49/50). Both accuracy checks were HTTP 200. Compose was brought down afterward.
+The 2026-10-03 full sample is in `docs/stress-results.md`. Fifteen routes were 50/50. The yagni-copilot burst and the gateway `POST /api/v1/patch` burst each returned one HTTP 500 (49/50). Both accuracy checks were HTTP 200. The same file has a later patch-only rerun: 50/50 HTTP 200, p50 34 ms, p95 50 ms, at `2026-10-02T22:51:57Z`.
+
+## Open items, 2026-10-03
+
+### Patch HTTP 500
+
+Both 49/50 rows in `docs/stress-results.md` are `POST /api/v1/patch` forwarded to `http://yagni-copilot:8081` (`scripts/run-stress-accuracy.sh` cases `yagni-copilot` and `ai-edge-gateway`). The recorded body is the servlet error JSON, so the throw is in yagni-copilot. The gateway rate limiter answers 429, and `InMemoryRateLimitBucketStore.tryConsume` is synchronized. `PortfolioAiClient.assist` on the offline path only reads fields set in the constructor. `HashingTextEmbedder` is not on this route.
+
+Cause, confirmed in javaparser-core 3.26.1 and `YagniPatchService`: the service is a Spring singleton and its constructor keeps one `JavaParser`. `measure` calls `javaParser.parse` on every request (line 87). `JavaParser` holds one `GeneratedJavaParser astParser`. `getParserForProvider` either stores that parser or calls `reset` on it, then parse uses its token state and `problems` list. `parse` catches `Exception` and turns it into a `ParseResult`, but an exception thrown from that catch (shared `problems` list) is rethrown, and `findAll` on a torn tree throws after `parse` returns. Either one becomes HTTP 500. One failure in fifty calls matches that race.
+
+Fix: build a new `JavaParser` with `JAVA_21` inside `measure` and delete the field. Do not catch the failure in the controller.
+
+Proof: `YagniPatchServiceTest` runs 50 threads against one service instance and fails if any call throws or if cyclomatic complexity or AST depth disagrees with a single-threaded call on the same source. Then `./mvnw -B test`. If Docker is up, rerun only the 50-way patch burst and write the real counts in `docs/stress-results.md`. If it is down, the unit test is the proof. No invented latencies.
+
+Result: before the fix, that test failed 1000/1000 with cyclomatic 1 against a baseline of 2 (the parse fell through to the line heuristic; the test itself did not throw). After `measure` builds a new `JavaParser` at lines 84-87, the test passes. `./mvnw -B test`: BUILD SUCCESS, 118 tests, 0 failures, 0 errors, 0 skipped. Docker was up. Patch burst through the gateway: 50/50 HTTP 200, 0 errors, p50 34 ms, p95 50 ms, accuracy HTTP 200 `mode` offline, auth 401/401/401.
+
+### GSD baseline
+
+Import from `TODO.md` and the apps that are already in the reactor. One phase, not a greenfield roadmap.
+
+Files to add:
+
+- `.planning/PROJECT.md`
+- `.planning/REQUIREMENTS.md`
+- `.planning/ROADMAP.md`
+- `.planning/phases/01-shipped-portfolio/01-VERIFICATION.md`
+- `.planning/phases/01-shipped-portfolio/01-01-SUMMARY.md` (the audit treats a passed verification with no summary as partial)
+
+Done means every v1 requirement is something the code and tests already do, the phase verification cites the Maven suite and the patch concurrency test, and a fresh audit writes `passed` only if the three-source check has no unsatisfied or orphaned requirement. Cloud deploy stays out. If the audit is still `gaps_found`, leave that status and say why.
+
+Result: those files are in `.planning/`. v1 ids are AUTH-01, PATCH-01, PATCH-02, GATE-01, EMBED-01. `init.milestone-op` reported phase_count 1, completed_phases 1. The 2026-10-03 audit is `passed` (5/5). Nyquist `VALIDATION.md` is still missing and is recorded as discovery, not as an unsatisfied requirement.
 
 ## GSD
 
-Still no roadmap; not part of this ship. `.planning/v1.0-MILESTONE-AUDIT.md` stays `gaps_found` and is not published.
+The 2026-09-28 audit was `gaps_found` because the planning baseline was missing. The 2026-10-03 audit in `.planning/v1.0-MILESTONE-AUDIT.md` is `passed`.
 
 ## Earlier done (verified 2026-09-29)
 
@@ -48,7 +78,7 @@ CI on older `67494a0`: [36391907928](https://github.com/mlvpatel/spring-agentic-
 
 ## Still out
 
-Cloud cluster deploy and image registry publish stay out. The one HTTP 500 on `/api/v1/patch` under 50 concurrent calls is recorded in the stress sample, not changed here.
+Cloud cluster deploy and image registry publish stay out.
 
 ## Remotes
 
@@ -57,4 +87,4 @@ Cloud cluster deploy and image registry publish stay out. The one HTTP 500 on `/
 | `origin` | `mlvpatel/Agentic-AI-Expert-Portfolio` | Private / local history. Left alone. |
 | `public` | `mlvpatel/spring-agentic-ai-portfolio` | Publish line. Commits go on top of public main; no force-push. |
 
-Do not force-push public main. Do not publish `.cursor/`, `AGENTS.md`, `CLAUDE.md`, `.env`, `*.p12`, `*.pem`, `.planning/`, or `archive/`.
+Do not force-push public main. Do not publish `.cursor/`, `AGENTS.md`, `CLAUDE.md`, `.env`, `*.p12`, `*.pem`, or `archive/`. Product planning under `.planning/` is part of the public tree.
