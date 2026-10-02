@@ -53,7 +53,7 @@ Files to add:
 
 Done means every v1 requirement is something the code and tests already do, the phase verification cites the Maven suite and the patch concurrency test, and a fresh audit writes `passed` only if the three-source check has no unsatisfied or orphaned requirement. Cloud deploy stays out. If the audit is still `gaps_found`, leave that status and say why.
 
-Result: those files are in `.planning/`. v1 ids are AUTH-01, PATCH-01, PATCH-02, GATE-01, EMBED-01. `init.milestone-op` reported phase_count 1, completed_phases 1. The 2026-10-03 audit is `passed` (5/5). Nyquist `VALIDATION.md` is still missing and is recorded as discovery, not as an unsatisfied requirement.
+Result: those files are in `.planning/`. v1 ids are AUTH-01, PATCH-01, PATCH-02, GATE-01, EMBED-01. `init.milestone-op` reported phase_count 1, completed_phases 1. The 2026-10-03 audit is `passed` (5/5). `01-VALIDATION.md` was added on 2026-10-03 from the existing suite; the audit status was not re-stamped.
 
 ## GSD
 
@@ -79,6 +79,8 @@ CI on older `67494a0`: [36391907928](https://github.com/mlvpatel/spring-agentic-
 ## Still out
 
 Cloud cluster deploy and image registry publish stay out.
+
+Live OpenAI call blocked: no `OPENAI_API_KEY` in the process environment, the login shell, `infra/compose/.env`, or an app `.env`.
 
 ## Remotes
 

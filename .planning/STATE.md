@@ -27,6 +27,7 @@ Present:
 - `REQUIREMENTS.md`
 - `phases/01-shipped-portfolio/01-VERIFICATION.md` (status passed)
 - `phases/01-shipped-portfolio/01-01-SUMMARY.md`
+- `phases/01-shipped-portfolio/01-VALIDATION.md` (status validated)
 
 Also on disk from earlier review:
 
@@ -42,4 +43,4 @@ Code review findings CR-01..04, WR-01..07, IN-01..04 stay fixed in the tree.
 
 ## Next
 
-Nyquist `VALIDATION.md` was not generated. The audit records that as discovery. Cloud deploy is still out of scope.
+`01-VALIDATION.md` records the five existing tests. The 2026-10-02 audit YAML was not re-run. Cloud deploy is still out of scope. A live OpenAI call still needs `OPENAI_API_KEY`.
