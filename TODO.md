@@ -1,6 +1,6 @@
 # Implementation plan
 
-Status date: 2026-10-03.
+Status date: 2026-10-03. Checked again 2026-10-06: `./mvnw -B test` BUILD SUCCESS, 118 tests, 0 failures, 0 errors, 0 skipped, wall time 35.59 s.
 
 The six cuts are on public main at `ecdf0ed` (`ecdf0eda002fe53d2b6c33d27255dad68894d9d1`), parent `ab6c92e`. `./mvnw -B test` on that tree: BUILD SUCCESS, 115 tests, 0 failures, 0 errors, 0 skipped. After `PortfolioEmbeddingClient`, the same command on 2026-10-03: BUILD SUCCESS, 117 tests, 0 failures, 0 errors, 0 skipped.
 
@@ -53,11 +53,11 @@ Files to add:
 
 Done means every v1 requirement is something the code and tests already do, the phase verification cites the Maven suite and the patch concurrency test, and a fresh audit writes `passed` only if the three-source check has no unsatisfied or orphaned requirement. Cloud deploy stays out. If the audit is still `gaps_found`, leave that status and say why.
 
-Result: those files are in `.planning/`. v1 ids are AUTH-01, PATCH-01, PATCH-02, GATE-01, EMBED-01. `init.milestone-op` reported phase_count 1, completed_phases 1. The 2026-10-03 audit is `passed` (5/5). `01-VALIDATION.md` was added on 2026-10-03 from the existing suite; the audit status was not re-stamped.
+Result: those files are in `.planning/`. v1 ids are AUTH-01, PATCH-01, PATCH-02, GATE-01, EMBED-01. `init.milestone-op` reported phase_count 1, completed_phases 1. The 2026-10-03 audit was `passed` (5/5) before Nyquist was re-checked. On 2026-10-06 the audit was run again. `.planning/v1.0-MILESTONE-AUDIT.md` is `passed` (5/5) and Nyquist is `COMPLIANT` because `01-VALIDATION.md` exists.
 
 ## GSD
 
-The 2026-09-28 audit was `gaps_found` because the planning baseline was missing. The 2026-10-03 audit in `.planning/v1.0-MILESTONE-AUDIT.md` is `passed`.
+The 2026-09-28 audit was `gaps_found` because the planning baseline was missing. The 2026-10-06 audit in `.planning/v1.0-MILESTONE-AUDIT.md` is `passed`. Nyquist overall is `COMPLIANT`.
 
 ## Earlier done (verified 2026-09-29)
 
@@ -80,7 +80,7 @@ CI on older `67494a0`: [36391907928](https://github.com/mlvpatel/spring-agentic-
 
 Cloud cluster deploy and image registry publish stay out.
 
-Live OpenAI call blocked: no `OPENAI_API_KEY` in the process environment, the login shell, `infra/compose/.env`, or an app `.env`.
+Live OpenAI call is not done. Checked 2026-10-06: no `OPENAI_API_KEY` in the process environment, the login shell, or `infra/compose/.env`. There is no root `.env`. No live call was made.
 
 ## Remotes
 

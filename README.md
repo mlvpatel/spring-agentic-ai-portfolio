@@ -1,4 +1,4 @@
-# Spring Agentic AI portfolio
+# Spring agentic AI portfolio
 
 [![CI](https://github.com/mlvpatel/spring-agentic-ai-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/mlvpatel/spring-agentic-ai-portfolio/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
@@ -32,15 +32,11 @@ C4Container
     Container(apps, "Domain apps P1–P9 + S1–S4", "Spring Boot 4 / Kotlin", "Offline engines + optional AI")
     Container(redis, "Redis", "Gateway rate limit when REDIS_URL set")
     Container(pg, "Postgres", "Optional P2/P8 via compose profile")
-    Container(prom, "Prometheus", "Metrics scrape")
-    Container(graf, "Grafana", "Dashboards")
   }
   Rel(dev, gw, "HTTP :8080")
   Rel(gw, apps, "/svc/<app>/** and unique /api/v1/... aliases")
   Rel(gw, redis, "token bucket")
   Rel(apps, pg, "JDBC when pgvector profile")
-  Rel(prom, apps, "scrape")
-  Rel(graf, prom, "query")
 ```
 
 ## Modules
@@ -104,7 +100,12 @@ Gateway listens on host `:8080`. Stress notes: [docs/stress-results.md](docs/str
 ./mvnw -B test
 ```
 
-Maven tests use H2 for P2/P8. They do not require Postgres, Redis, Docker, or an OpenAI key.
+Maven tests use H2 for P2/P8. They do not require Postgres, Redis, Docker, or an OpenAI key. The default path is offline.
+
+## Still open
+
+- Live OpenAI call is not done. No `OPENAI_API_KEY` is configured in the process environment, the login shell, or `infra/compose/.env`.
+- Cloud cluster deploy and image registry publish stay out of scope.
 
 ## License
 

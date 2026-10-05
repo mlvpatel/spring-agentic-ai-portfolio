@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: shipped portfolio
 status: audited
-last_updated: 2026-10-02T22:55:00Z
+last_updated: 2026-10-05T22:39:06Z
 current_phase: 01-shipped-portfolio
 phases_complete: 1
 phases_total: 1
@@ -14,7 +14,7 @@ last_code_review_fix: v1.0-REVIEW-FIX.md
 
 # GSD State
 
-**Last event:** 2026-10-03 import of the shipped reactor, then milestone audit. `./mvnw -B test` → 118 tests, 0 failures.
+**Last event:** 2026-10-06 re-audit after `./mvnw -B test` BUILD SUCCESS, 118 tests, 0 failures, wall time 35.59 s. Nyquist is COMPLIANT.
 
 Prior: `/gsd-code-review --fix` → all_fixed (`v1.0-REVIEW-FIX.md`). The 2026-09-28 audit was `gaps_found` because PROJECT, ROADMAP, REQUIREMENTS, and phases were missing.
 
@@ -43,4 +43,4 @@ Code review findings CR-01..04, WR-01..07, IN-01..04 stay fixed in the tree.
 
 ## Next
 
-`01-VALIDATION.md` records the five existing tests. The 2026-10-02 audit YAML was not re-run. Cloud deploy is still out of scope. A live OpenAI call still needs `OPENAI_API_KEY`.
+`01-VALIDATION.md` records the five existing tests and the 2026-10-06 suite wall time. The 2026-10-06 audit is `passed` and Nyquist is COMPLIANT. Cloud cluster deploy and image registry publish stay out of scope. A live OpenAI call is not done: no `OPENAI_API_KEY` is configured.

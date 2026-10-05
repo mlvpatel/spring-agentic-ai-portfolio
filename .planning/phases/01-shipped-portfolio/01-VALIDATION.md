@@ -19,14 +19,14 @@ Per-phase validation contract. Reconstructed from the shipped tests after phase 
 | Config file | root `pom.xml` |
 | Quick run command | `./mvnw -B test` |
 | Full suite command | `./mvnw -B test` |
-| Estimated runtime | not recorded on the 2026-10-03 run |
+| Estimated runtime | 35.59 s wall time on 2026-10-06 |
 
 ## Sampling rate
 
 - After every task commit: `./mvnw -B test`
 - After every plan wave: `./mvnw -B test`
 - Before `/gsd-verify-work`: full suite must be green
-- Max feedback latency: wall time of the 2026-10-03 suite was not recorded
+- Max feedback latency: 35.59 s wall time for `./mvnw -B test` on 2026-10-06 (`/usr/bin/time -p` real). Maven reported 34.751 s. The 2026-10-03 run's wall time was not recorded.
 
 ## Per-task verification map
 
@@ -41,6 +41,8 @@ Per-phase validation contract. Reconstructed from the shipped tests after phase 
 Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky
 
 The command that was actually run on 2026-10-03 is `./mvnw -B test`: BUILD SUCCESS, 118 tests, 0 failures, 0 errors, 0 skipped. That count includes `YagniPatchServiceTest.concurrentProposesDoNotThrow`. The per-row commands name the test that covers each requirement. They were not run again as separate invocations for this file.
+
+The same full command on 2026-10-06, finished at 2026-10-06T00:32:52+02:00: BUILD SUCCESS, 118 tests, 0 failures, 0 errors, 0 skipped. `/usr/bin/time -p` real 35.59 s. Maven total time 34.751 s. Every file in public `668291d` matched the tree that ran. The per-row commands were not invoked separately.
 
 Gateway patch burst, recorded in `docs/stress-results.md` at `2026-10-02T22:51:57Z`: 50 concurrent `POST /api/v1/patch` calls through the gateway, 50/50 HTTP 200, 0 errors, p50 34 ms, p95 50 ms. That burst is extra evidence for PATCH-02. It is not a sixth requirement.
 
@@ -58,7 +60,7 @@ All phase behaviors have automated verification.
 - [x] Sampling continuity: no 3 consecutive tasks without automated verify
 - [x] Wave 0 covers all MISSING references
 - [x] No watch-mode flags
-- [ ] Feedback latency under a recorded bound (suite wall time was not recorded)
+- [x] Feedback latency under a recorded bound (35.59 s wall time on 2026-10-06, 118 tests, 0 failures)
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** approved 2026-10-03
+**Approval:** approved 2026-10-03. Latency box signed 2026-10-06 after the green suite above.
