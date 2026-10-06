@@ -1,5 +1,35 @@
 # Stress results
 
+## 2026-10-06 sample
+
+Laptop Docker Desktop sample against `ai-edge-gateway` on host port 8080. Started 2026-10-06 04:27 +0200 (`2026-10-06T02:27:01Z`), finished `2026-10-06T02:29:48Z` (script wall time 167 s, including a gateway recreate before each route).
+Method: `scripts/run-stress-accuracy.sh`, 50 concurrent `curl` requests (`xargs -P 50`). API key from gitignored `infra/compose/.env` (not printed). `OPENAI_API_KEY` was unset and `SPRING_AI_MODEL_CHAT=none`, so the apps stayed offline. Not a certified benchmark.
+Stack: `docker compose -f infra/compose/docker-compose.yml --env-file .env up -d --build`, then the script, then `docker compose down`.
+
+Accuracy is the script's single checked request. The success columns are the 50-way burst. Every burst was HTTP 200. No HTTP 5xx.
+
+| app | accuracy | auth missing/ey*/valid-test-token | success | success rate | errors | p50 ms | p95 ms | happy HTTP |
+|---|---|---|---|---|---|---|---|---|
+| `yagni-copilot` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 53 | 85 | 200 |
+| `design-rag-studio` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 42 | 73 | 200 |
+| `design-rag-empty` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 37 | 53 | 200 |
+| `quality-gate` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 64 | 96 | 200 |
+| `quality-gate-secret` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 25 | 33 | 200 |
+| `spec-orchestrator` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 33 | 43 | 200 |
+| `agent-observability` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 31 | 40 | 200 |
+| `mcp-broker` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 31 | 51 | 200 |
+| `app-factory` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 57 | 73 | 200 |
+| `paper-algorithm-lab` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 28 | 34 | 200 |
+| `system-architect` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 17 | 23 | 200 |
+| `ai-edge-gateway` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 32 | 45 | 200 |
+| `multimodal-support-desk` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 46 | 94 | 200 |
+| `kotlin-rag-empty` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 67 | 84 | 200 |
+| `kotlin-rag-microservice` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 43 | 59 | 200 |
+| `ai-validated-integration-harness` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 42 | 58 | 200 |
+| `security-review-assistant` | PASS | 401/401/401 | 50/50 | 100% | 0/50 | 30 | 39 | 200 |
+
+`POST /api/v1/patch` is both the `yagni-copilot` row and the `ai-edge-gateway` row. Both were 50/50.
+
 ## 2026-10-03 sample
 
 Laptop Docker Desktop sample against `ai-edge-gateway` on host port 8080. Started 2026-10-03 00:24 +0200 (`2026-10-02T22:24Z`).

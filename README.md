@@ -104,8 +104,8 @@ Maven tests use H2 for P2/P8. They do not require Postgres, Redis, Docker, or an
 
 ## Still open
 
-- Live OpenAI call is not done. No `OPENAI_API_KEY` is configured in the process environment, the login shell, or `infra/compose/.env`.
-- Cloud cluster deploy and image registry publish stay out of scope.
+- Live OpenAI call is BLOCKED. Checked 2026-10-06: `OPENAI_API_KEY` is absent from the process environment, the login shell, and `infra/compose/.env`. No call was made.
+- Cloud cluster deploy stays out of scope. Image registry push stays blocked until a registry login exists.
 
 ## License
 
