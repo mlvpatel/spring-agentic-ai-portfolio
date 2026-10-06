@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Spring agentic AI portfolio",
+    "locale": "en",
+    "output": "docs/architecture/portfolio.architecture.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/mlvpatel/spring-agentic-ai-portfolio.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "bb31e6db3ae8385ae94c04dcc8c50dd89003e52c"
+    }
+  },
+  "components": [
+    {
+      "id": "caller",
+      "type": "external",
+      "label": "Caller",
+      "sublabel": "HTTP client",
+      "pos": [24, 320],
+      "size": [140, 68]
+    },
+    {
+      "id": "gateway",
+      "type": "security",
+      "label": "ai-edge-gateway",
+      "sublabel": "Boot 4.1.1 :8080",
+      "pos": [280, 312],
+      "size": [200, 76],
+      "sources": [
+        {
+          "path": "apps/ai-edge-gateway/src/main/resources/application.yml",
+          "line": 12,
+          "end_line": 22,
+          "label": "API key and routes"
+        },
+        {
+          "path": "infra/compose/docker-compose.yml",
+          "line": 231,
+          "end_line": 243,
+          "label": "host port 8080"
+        },
+        {
+          "path": "pom.xml",
+          "line": 7,
+          "end_line": 11,
+          "label": "Boot 4.1.1 parent"
+        }
+      ]
+    },
+    {
+      "id": "apps",
+      "type": "backend",
+      "label": "Domain apps",
+      "sublabel": "P1-P9 and S1-S4",
+      "pos": [640, 312],
+      "size": [220, 76],
+      "sources": [
+        {
+          "path": "pom.xml",
+          "line": 25,
+          "end_line": 38,
+          "label": "reactor modules"
+        },
+        {
+          "path": "libs/shared/src/main/java/com/portfolio/shared/ai/PortfolioAiClient.java",
+          "line": 14,
+          "end_line": 33,
+          "label": "in-process AI client"
+        },
+        {
+          "path": "apps/design-rag-studio/src/main/resources/application.yml",
+          "line": 8,
+          "end_line": 11,
+          "label": "default H2"
+        }
+      ]
+    },
+    {
+      "id": "redis",
+      "type": "database",
+      "label": "Redis 7",
+      "sublabel": "rate limit store",
+      "pos": [295, 48],
+      "size": [170, 64],
+      "sources": [
+        {
+          "path": "infra/compose/docker-compose.yml",
+          "line": 11,
+          "end_line": 14,
+          "label": "redis service"
+        },
+        {
+          "path": "apps/ai-edge-gateway/src/main/java/com/portfolio/edge/config/RateLimitConfiguration.java",
+          "line": 15,
+          "end_line": 22,
+          "label": "Redis if URL set"
+        }
+      ]
+    },
+    {
+      "id": "postgres",
+      "type": "database",
+      "label": "Postgres 16",
+      "sublabel": "profiled P2 and P8",
+      "pos": [655, 540],
+      "size": [190, 64],
+      "sources": [
+        {
+          "path": "infra/compose/docker-compose.yml",
+          "line": 16,
+          "end_line": 33,
+          "label": "two profiled DBs"
+        },
+        {
+          "path": "infra/compose/docker-compose.prod.yml",
+          "line": 1,
+          "end_line": 10,
+          "label": "prod JDBC URLs"
+        }
+      ]
+    },
+    {
+      "id": "openai",
+      "type": "external",
+      "label": "OpenAI",
+      "sublabel": "Spring AI 2.0.1",
+      "pos": [655, 48],
+      "size": [190, 64],
+      "sources": [
+        {
+          "path": "libs/shared/src/main/resources/application.properties",
+          "line": 3,
+          "end_line": 5,
+          "label": "chat model default none"
+        },
+        {
+          "path": "pom.xml",
+          "line": 51,
+          "end_line": 51,
+          "label": "Spring AI 2.0.1"
+        },
+        {
+          "path": "libs/shared/src/main/java/com/portfolio/shared/ai/PortfolioAiClient.java",
+          "line": 23,
+          "end_line": 28,
+          "label": "live only with key"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Compose network",
+      "wraps": ["gateway", "apps", "redis", "postgres"]
+    },
+    {
+      "kind": "security-group",
+      "label": "ApiKeyAuth on the edge",
+      "wraps": ["gateway"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "caller-gateway",
+      "from": "caller",
+      "to": "gateway",
+      "label": "HTTP :8080",
+      "variant": "emphasis"
+    },
+    {
+      "id": "gateway-apps",
+      "from": "gateway",
+      "to": "apps",
+      "label": "HTTP routes"
+    },
+    {
+      "id": "gateway-redis",
+      "from": "gateway",
+      "to": "redis",
+      "label": "if REDIS_URL set",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "apps-postgres",
+      "from": "apps",
+      "to": "postgres",
+      "label": "P2/P8 if profile",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "apps-openai",
+      "from": "apps",
+      "to": "openai",
+      "label": "if key and model",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Edge",
+      "items": [
+        "X-API-Key or Bearer must match GATEWAY_SECURITY_APIKEY",
+        "OIDC_ISSUER_URI is optional and off when blank",
+        "Compose sets REDIS_URL to redis://redis:6379"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Apps",
+      "items": [
+        "Fourteen Boot apps plus libs/shared",
+        "P2 and P8 use in-memory H2 until a Postgres profile is on",
+        "Empty design and Kotlin corpora are refused"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Optional",
+      "items": [
+        "ChatClient runs only when a ChatModel bean and an API key are both set",
+        "TLS nginx on :8443 is the tls compose profile",
+        "No Prometheus or Grafana service in compose"
+      ]
+    }
+  ]
+}

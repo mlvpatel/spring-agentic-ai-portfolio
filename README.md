@@ -9,6 +9,8 @@ Java 21 Maven reactor of offline-first Spring Boot / Spring AI sample services b
 
 ## Architecture (C4)
 
+Archify 3.0.1 rendered [docs/architecture/portfolio.architecture.html](docs/architecture/portfolio.architecture.html) from commit bb31e6d. Notes are in [docs/architecture.md](docs/architecture.md).
+
 ### Context
 
 ```mermaid
@@ -76,7 +78,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env u
 # Postgres for P2/P8 (pgvector JDBC):
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile prod --env-file .env up -d --build
 # Optional TLS on :8443 (generate certs first):
-#   ../../scripts/generate-dev-certs.sh && docker compose -f docker-compose.yml --env-file .env --profile tls up -d
+#   ../scripts/generate-dev-certs.sh && docker compose -f docker-compose.yml --env-file .env --profile tls up -d
 ```
 
 Gateway listens on host `:8080`. Stress notes: [docs/stress-results.md](docs/stress-results.md).
