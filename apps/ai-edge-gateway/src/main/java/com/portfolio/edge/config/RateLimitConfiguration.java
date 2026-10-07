@@ -17,7 +17,7 @@ public class RateLimitConfiguration {
             @Value("${gateway.rateLimiter.replenishRate:100}") int replenishRate,
             @Value("${gateway.rateLimiter.burstCapacity:200}") int burstCapacity) {
         if (StringUtils.hasText(redisUrl)) {
-            return new RedisRateLimitBucketStore(redisUrl.trim(), burstCapacity);
+            return new RedisRateLimitBucketStore(redisUrl.trim(), replenishRate, burstCapacity);
         }
         return new InMemoryRateLimitBucketStore(replenishRate, burstCapacity);
     }

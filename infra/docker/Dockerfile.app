@@ -5,4 +5,4 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 ARG JAR_FILE
 COPY ${JAR_FILE} /app/app.jar
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]

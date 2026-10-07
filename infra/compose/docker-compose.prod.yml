@@ -7,7 +7,7 @@ services:
       DESIGN_RAG_SPRING_PROFILES: pgvector
       DESIGN_RAG_JDBC_URL: jdbc:postgresql://design-rag-db:5432/design
       DESIGN_RAG_JDBC_USER: postgres
-      DESIGN_RAG_JDBC_PASSWORD: design
+      DESIGN_RAG_JDBC_PASSWORD: ${DESIGN_RAG_JDBC_PASSWORD:?Set DESIGN_RAG_JDBC_PASSWORD}
     depends_on:
       - design-rag-db
 
@@ -16,6 +16,6 @@ services:
       PAPER_LAB_SPRING_PROFILES: pgvector
       PAPER_LAB_JDBC_URL: jdbc:postgresql://paper-lab-db:5432/papers
       PAPER_LAB_JDBC_USER: postgres
-      PAPER_LAB_JDBC_PASSWORD: papers
+      PAPER_LAB_JDBC_PASSWORD: ${PAPER_LAB_JDBC_PASSWORD:?Set PAPER_LAB_JDBC_PASSWORD}
     depends_on:
       - paper-lab-db

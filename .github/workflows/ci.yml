@@ -35,3 +35,23 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  gateway-image:
+    name: Build gateway image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+
+      - name: Package gateway
+        run: ./mvnw -B -DskipTests -pl apps/ai-edge-gateway -am package
+
+      - name: Build gateway image
+        run: docker build -f infra/docker/Dockerfile.app --build-arg JAR_FILE=apps/ai-edge-gateway/target/ai-edge-gateway-1.0.0-SNAPSHOT.jar -t portfolio/ai-edge-gateway:ci .

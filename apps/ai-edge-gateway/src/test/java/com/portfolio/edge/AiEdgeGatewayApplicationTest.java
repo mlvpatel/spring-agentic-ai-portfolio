@@ -1,5 +1,7 @@
 package com.portfolio.edge;
 
+import com.portfolio.edge.config.DownstreamCredentialMapper;
+import com.portfolio.edge.config.DownstreamCredentialProperties;
 import com.portfolio.edge.filter.ApiKeyAuthGatewayFilterFactory;
 import com.portfolio.edge.filter.RateLimitingGatewayFilterFactory;
 import org.junit.jupiter.api.DisplayName;
@@ -7,14 +9,23 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import java.net.InetSocketAddress;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -182,5 +193,94 @@ class AiEdgeGatewayApplicationTest {
         filter.filter(ex3, e -> Mono.empty()).block();
         assertThat(ex3.getResponse().getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
         assertThat(ex3.getResponse().getHeaders().getFirst("Retry-After")).isEqualTo("1");
+    }
+
+    @Test
+    @DisplayName("OIDC subject is the rate-limit identity; fake ey* and valid-test-token stay rejected")
+    void oidcSubjectIsRateLimitIdentity() {
+        JwtDecoder decoder = token -> {
+            if (token.startsWith("eyJ.valid.")) {
+                return jwtWithSubject(token.substring("eyJ.valid.".length()));
+            }
+            throw new JwtException("rejected");
+        };
+        var auth = oidcFilter(decoder);
+        var limiter = new RateLimitingGatewayFilterFactory(0, 1)
+                .apply(new RateLimitingGatewayFilterFactory.Config());
+        InetSocketAddress remote = new InetSocketAddress("10.1.1.8", 9);
+
+        AtomicReference<String> seen = new AtomicReference<>();
+        MockServerWebExchange first = bearerExchange(remote, "eyJ.valid.user-a");
+        auth.filter(first, mutated -> {
+            seen.set(mutated.getRequest().getHeaders().getFirst("X-Authenticated-User"));
+            return limiter.filter(mutated, exchange -> Mono.empty());
+        }).block(Duration.ofSeconds(3));
+        assertThat(seen.get()).isEqualTo("user-a");
+        assertThat(first.getResponse().getStatusCode()).isNull();
+
+        MockServerWebExchange second = bearerExchange(remote, "eyJ.valid.user-a");
+        auth.filter(second, mutated -> limiter.filter(mutated, exchange -> Mono.empty()))
+                .block(Duration.ofSeconds(3));
+        assertThat(second.getResponse().getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+
+        MockServerWebExchange other = bearerExchange(remote, "eyJ.valid.user-b");
+        auth.filter(other, mutated -> limiter.filter(mutated, exchange -> Mono.empty()))
+                .block(Duration.ofSeconds(3));
+        assertThat(other.getResponse().getStatusCode()).isNull();
+
+        MockServerWebExchange fakeEy = bearerExchange(remote, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.fake.sig");
+        auth.filter(fakeEy, exchange -> Mono.empty()).block(Duration.ofSeconds(3));
+        assertThat(fakeEy.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+        MockServerWebExchange fakeToken = bearerExchange(remote, "valid-test-token");
+        auth.filter(fakeToken, exchange -> Mono.empty()).block(Duration.ofSeconds(3));
+        assertThat(fakeToken.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    @DisplayName("Configured API key does not go through the JWT decoder")
+    void apiKeySkipsJwtDecoder() {
+        AtomicInteger decodes = new AtomicInteger();
+        JwtDecoder decoder = token -> {
+            decodes.incrementAndGet();
+            throw new JwtException("rejected");
+        };
+        var auth = oidcFilter(decoder);
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+                MockServerHttpRequest.get("/api/v1/demo")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer configured-gateway-key")
+                        .build());
+        AtomicReference<String> seen = new AtomicReference<>();
+        auth.filter(exchange, mutated -> {
+            seen.set(mutated.getRequest().getHeaders().getFirst("X-Authenticated-User"));
+            return Mono.empty();
+        }).block(Duration.ofSeconds(3));
+        assertThat(seen.get()).isEqualTo("bearer-client");
+        assertThat(decodes.get()).isZero();
+    }
+
+    private static org.springframework.cloud.gateway.filter.GatewayFilter oidcFilter(JwtDecoder decoder) {
+        DownstreamCredentialMapper mapper = new DownstreamCredentialMapper(
+                new MockEnvironment(), new DownstreamCredentialProperties(), "configured-gateway-key");
+        return new ApiKeyAuthGatewayFilterFactory("configured-gateway-key", decoder, mapper)
+                .apply(new ApiKeyAuthGatewayFilterFactory.Config());
+    }
+
+    private static Jwt jwtWithSubject(String subject) {
+        Instant now = Instant.now();
+        return Jwt.withTokenValue("token")
+                .header("alg", "none")
+                .subject(subject)
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(300))
+                .build();
+    }
+
+    private static MockServerWebExchange bearerExchange(InetSocketAddress remote, String token) {
+        return MockServerWebExchange.from(
+                MockServerHttpRequest.get("/api/v1/demo")
+                        .remoteAddress(remote)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .build());
     }
 }

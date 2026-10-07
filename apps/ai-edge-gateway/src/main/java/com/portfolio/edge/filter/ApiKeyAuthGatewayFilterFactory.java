@@ -2,6 +2,7 @@ package com.portfolio.edge.filter;
 
 import com.portfolio.edge.config.DownstreamCredentialMapper;
 import com.portfolio.edge.web.JsonErrorBodies;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -33,7 +34,9 @@ import java.util.List;
  * Edge API-key filter. Accepts the configured key via X-API-Key or Bearer.
  * When {@code gateway.security.oidcIssuerUri} is set, also accepts Bearer JWTs from that issuer
  * (optional audience check via {@code gateway.security.oidcAudience}).
- * After auth, replaces client credentials with the per-route downstream API key.
+ * A validated JWT's {@code sub} claim is the caller on {@code X-Authenticated-User}
+ * (the rate limiter reads that header). After auth, replaces client credentials with the
+ * per-route downstream API key.
  * Does not treat JWT-looking {@code ey*} tokens or {@code valid-test-token} as bypasses unless OIDC validates them.
  */
 @Component
@@ -43,11 +46,17 @@ public class ApiKeyAuthGatewayFilterFactory extends AbstractGatewayFilterFactory
     private final JwtDecoder jwtDecoder;
     private final DownstreamCredentialMapper downstreamCredentialMapper;
 
+    @Autowired
     public ApiKeyAuthGatewayFilterFactory(
             @Value("${gateway.security.apiKey:}") String configuredApiKey,
             @Value("${gateway.security.oidcIssuerUri:}") String oidcIssuerUri,
             @Value("${gateway.security.oidcAudience:}") String oidcAudience,
             DownstreamCredentialMapper downstreamCredentialMapper) {
+        this(configuredApiKey, buildJwtDecoder(oidcIssuerUri, oidcAudience), downstreamCredentialMapper);
+    }
+
+    public ApiKeyAuthGatewayFilterFactory(String configuredApiKey, JwtDecoder jwtDecoder,
+                                          DownstreamCredentialMapper downstreamCredentialMapper) {
         super(Config.class);
         if (!StringUtils.hasText(configuredApiKey)) {
             throw new IllegalStateException(
@@ -55,7 +64,7 @@ public class ApiKeyAuthGatewayFilterFactory extends AbstractGatewayFilterFactory
         }
         this.configuredApiKey = configuredApiKey;
         this.downstreamCredentialMapper = downstreamCredentialMapper;
-        this.jwtDecoder = buildJwtDecoder(oidcIssuerUri, oidcAudience);
+        this.jwtDecoder = jwtDecoder;
     }
 
     private static JwtDecoder buildJwtDecoder(String oidcIssuerUri, String oidcAudience) {
@@ -102,12 +111,9 @@ public class ApiKeyAuthGatewayFilterFactory extends AbstractGatewayFilterFactory
                     return forwardAuthorized(exchange, chain, path, "bearer-client");
                 }
                 if (jwtDecoder != null) {
-                    return Mono.fromCallable(() -> {
-                                jwtDecoder.decode(token);
-                                return true;
-                            })
+                    return Mono.fromCallable(() -> jwtDecoder.decode(token))
                             .subscribeOn(Schedulers.boundedElastic())
-                            .flatMap(ok -> forwardAuthorized(exchange, chain, path, "oidc-client"))
+                            .flatMap(jwt -> forwardAuthorized(exchange, chain, path, callerFrom(jwt)))
                             .onErrorResume(JwtException.class,
                                     ignored -> onError(exchange,
                                             "Missing or invalid API Key / Authorization Bearer token",
@@ -116,6 +122,18 @@ public class ApiKeyAuthGatewayFilterFactory extends AbstractGatewayFilterFactory
             }
             return onError(exchange, "Missing or invalid API Key / Authorization Bearer token", HttpStatus.UNAUTHORIZED);
         };
+    }
+
+    private static String callerFrom(Jwt jwt) {
+        String subject = jwt.getSubject();
+        if (!StringUtils.hasText(subject)) {
+            return "oidc-client";
+        }
+        String cleaned = subject.replace("\r", "").replace("\n", "").trim();
+        if (!StringUtils.hasText(cleaned)) {
+            return "oidc-client";
+        }
+        return cleaned;
     }
 
     private Mono<Void> forwardAuthorized(

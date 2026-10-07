@@ -1,7 +1,8 @@
 # Prod-oriented stack: builds app images from jars (run ./mvnw -DskipTests package first).
 # Fast jar-mount override: docker compose -f docker-compose.yml -f docker-compose.dev.yml ...
 # Optional: --profile postgres|pgvector (P2/P8 JDBC), --profile tls (nginx :8443).
-# Copy .env.example → .env and set GATEWAY_SECURITY_APIKEY.
+# Copy .env.example → .env. Set GATEWAY_SECURITY_APIKEY, DESIGN_RAG_DB_PASSWORD,
+# and PAPER_LAB_DB_PASSWORD. docker compose config fails without them.
 
 x-app-build: &app-build
   context: ../..
@@ -19,9 +20,7 @@ services:
     environment:
       POSTGRES_DB: design
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DESIGN_RAG_DB_PASSWORD:-design}
-    ports:
-      - "5433:5432"
+      POSTGRES_PASSWORD: ${DESIGN_RAG_DB_PASSWORD:?Set DESIGN_RAG_DB_PASSWORD}
     networks:
       - agentic-network
 
@@ -31,7 +30,7 @@ services:
     environment:
       POSTGRES_DB: papers
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${PAPER_LAB_DB_PASSWORD:-papers}
+      POSTGRES_PASSWORD: ${PAPER_LAB_DB_PASSWORD:?Set PAPER_LAB_DB_PASSWORD}
     networks:
       - agentic-network
 
@@ -41,6 +40,7 @@ services:
       args:
         JAR_FILE: apps/yagni-copilot/target/yagni-copilot-1.0.0-SNAPSHOT.jar
     image: portfolio/yagni-copilot:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8081"
       YAGNI_API_KEY: ${YAGNI_API_KEY:-}
@@ -55,6 +55,7 @@ services:
       args:
         JAR_FILE: apps/design-rag-studio/target/design-rag-studio-1.0.0-SNAPSHOT.jar
     image: portfolio/design-rag-studio:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8082"
       DESIGN_RAG_API_KEY: ${DESIGN_RAG_API_KEY:-}
@@ -64,7 +65,7 @@ services:
       SPRING_PROFILES_ACTIVE: ${DESIGN_RAG_SPRING_PROFILES:-}
       DESIGN_RAG_JDBC_URL: ${DESIGN_RAG_JDBC_URL:-}
       DESIGN_RAG_JDBC_USER: ${DESIGN_RAG_JDBC_USER:-postgres}
-      DESIGN_RAG_JDBC_PASSWORD: ${DESIGN_RAG_JDBC_PASSWORD:-design}
+      DESIGN_RAG_JDBC_PASSWORD: ${DESIGN_RAG_JDBC_PASSWORD:-}
     networks:
       - agentic-network
 
@@ -74,6 +75,7 @@ services:
       args:
         JAR_FILE: apps/quality-gate/target/quality-gate-1.0.0-SNAPSHOT.jar
     image: portfolio/quality-gate:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8083"
       QUALITY_GATE_API_KEY: ${QUALITY_GATE_API_KEY:-}
@@ -88,6 +90,7 @@ services:
       args:
         JAR_FILE: apps/spec-orchestrator/target/spec-orchestrator-1.0.0-SNAPSHOT.jar
     image: portfolio/spec-orchestrator:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8084"
       SPEC_ORCH_API_KEY: ${SPEC_ORCH_API_KEY:-}
@@ -102,6 +105,7 @@ services:
       args:
         JAR_FILE: apps/agent-observability/target/agent-observability-1.0.0-SNAPSHOT.jar
     image: portfolio/agent-observability:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8085"
       OBSERVABILITY_API_KEY: ${OBSERVABILITY_API_KEY:-}
@@ -116,6 +120,7 @@ services:
       args:
         JAR_FILE: apps/mcp-broker/target/mcp-broker-1.0.0-SNAPSHOT.jar
     image: portfolio/mcp-broker:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8086"
       MCP_BROKER_API_KEY: ${MCP_BROKER_API_KEY:-}
@@ -131,6 +136,7 @@ services:
       args:
         JAR_FILE: apps/app-factory/target/app-factory-1.0.0-SNAPSHOT.jar
     image: portfolio/app-factory:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8087"
       APP_FACTORY_API_KEY: ${APP_FACTORY_API_KEY:-}
@@ -145,6 +151,7 @@ services:
       args:
         JAR_FILE: apps/paper-algorithm-lab/target/paper-algorithm-lab-1.0.0-SNAPSHOT.jar
     image: portfolio/paper-algorithm-lab:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8088"
       PAPER_LAB_API_KEY: ${PAPER_LAB_API_KEY:-}
@@ -153,7 +160,7 @@ services:
       SPRING_PROFILES_ACTIVE: ${PAPER_LAB_SPRING_PROFILES:-}
       PAPER_LAB_JDBC_URL: ${PAPER_LAB_JDBC_URL:-}
       PAPER_LAB_JDBC_USER: ${PAPER_LAB_JDBC_USER:-postgres}
-      PAPER_LAB_JDBC_PASSWORD: ${PAPER_LAB_JDBC_PASSWORD:-papers}
+      PAPER_LAB_JDBC_PASSWORD: ${PAPER_LAB_JDBC_PASSWORD:-}
     networks:
       - agentic-network
 
@@ -163,6 +170,7 @@ services:
       args:
         JAR_FILE: apps/system-architect/target/system-architect-1.0.0-SNAPSHOT.jar
     image: portfolio/system-architect:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8089"
       ARCHITECT_API_KEY: ${ARCHITECT_API_KEY:-}
@@ -177,6 +185,7 @@ services:
       args:
         JAR_FILE: apps/multimodal-support-desk/target/multimodal-support-desk-1.0.0-SNAPSHOT.jar
     image: portfolio/multimodal-support-desk:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8091"
       MULTIMODAL_DESK_API_KEY: ${MULTIMODAL_DESK_API_KEY:-}
@@ -191,6 +200,7 @@ services:
       args:
         JAR_FILE: apps/kotlin-rag-microservice/target/kotlin-rag-microservice-1.0.0-SNAPSHOT.jar
     image: portfolio/kotlin-rag-microservice:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8092"
       KOTLIN_RAG_API_KEY: ${KOTLIN_RAG_API_KEY:-}
@@ -206,6 +216,7 @@ services:
       args:
         JAR_FILE: apps/ai-validated-integration-harness/target/ai-validated-integration-harness-1.0.0-SNAPSHOT.jar
     image: portfolio/ai-validated-integration-harness:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8093"
       AI_HARNESS_API_KEY: ${AI_HARNESS_API_KEY:-}
@@ -220,6 +231,7 @@ services:
       args:
         JAR_FILE: apps/security-review-assistant/target/security-review-assistant-1.0.0-SNAPSHOT.jar
     image: portfolio/security-review-assistant:local
+    mem_limit: 512m
     environment:
       SERVER_PORT: "8094"
       SECURITY_REVIEW_API_KEY: ${SECURITY_REVIEW_API_KEY:-}
@@ -236,6 +248,7 @@ services:
     image: portfolio/ai-edge-gateway:local
     ports:
       - "8080:8080"
+    mem_limit: 768m
     environment:
       SERVER_PORT: "8080"
       GATEWAY_SECURITY_APIKEY: ${GATEWAY_SECURITY_APIKEY:?Set GATEWAY_SECURITY_APIKEY in the environment — no demo default}

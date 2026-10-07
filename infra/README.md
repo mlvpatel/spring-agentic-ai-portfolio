@@ -26,7 +26,7 @@ Build jars first from the repo root: `./mvnw -DskipTests package`.
 
 ### Environment
 
-Copy `compose/.env.example` to `compose/.env` (gitignored). Required: `GATEWAY_SECURITY_APIKEY`. No demo default for that.
+Copy `compose/.env.example` to `compose/.env` (gitignored). `docker compose config` needs `GATEWAY_SECURITY_APIKEY`, `DESIGN_RAG_DB_PASSWORD`, and `PAPER_LAB_DB_PASSWORD` in the environment or in that file. No demo default for the gateway key. Postgres stays on the compose network (no host port).
 
 - `REDIS_URL` defaults to `redis://redis:6379` in compose; the gateway uses Redis rate limiting when that URL is set, otherwise an in-memory bucket (tests).
 - `OIDC_ISSUER_URI` enables optional OIDC resource-server checks on the gateway when set.

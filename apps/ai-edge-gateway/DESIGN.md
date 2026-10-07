@@ -28,16 +28,16 @@ Backend base URLs come from `GATEWAY_URL_*` environment variables (see `applicat
 
 Default: shared API key from `GATEWAY_SECURITY_APIKEY` or `GATEWAY_API_KEY`, sent as `X-API-Key` or `Authorization: Bearer <same key>`.
 
-Optional OIDC: when `OIDC_ISSUER_URI` / `gateway.security.oidcIssuerUri` is non-empty, Bearer JWTs validated with `NimbusJwtDecoder` against that issuer are accepted (`X-Authenticated-User: oidc-client`). API key behavior is unchanged. Invalid JWT falls through; missing or invalid credentials return 401. Without OIDC, `ey*` and `valid-test-token` Bearer values are rejected unless they equal the configured API key.
+Optional OIDC: when `OIDC_ISSUER_URI` / `gateway.security.oidcIssuerUri` is non-empty, Bearer JWTs validated with `NimbusJwtDecoder` against that issuer are accepted. The JWT `sub` claim is written to `X-Authenticated-User`, and the rate limiter uses that header. API key behavior is unchanged. An invalid JWT returns 401. Without OIDC, `ey*` and `valid-test-token` Bearer values are rejected unless they equal the configured API key.
 
 `/actuator/**` and `/fallback/**` skip auth.
 
 ## Rate limiting
 
-Per client IP on all other paths. Settings under `gateway.rateLimiter`:
+Per caller on all other paths. The key is `X-Authenticated-User` plus client IP when that header is set, otherwise the client IP. Settings under `gateway.rateLimiter`:
 
 - `replenishRate` and `burstCapacity` drive the in-memory token bucket when Redis is off.
-- When `REDIS_URL` / `gateway.rateLimiter.redisUrl` is set, limits use a Redis fixed-window counter (INCR + TTL) with `burstCapacity` requests per second per client key.
+- When `REDIS_URL` / `gateway.rateLimiter.redisUrl` is set, limits use a Redis token bucket with the same replenish rate and burst capacity. The balance and TTL are written in one Lua compare-and-set.
 
 429 responses include `Retry-After: 1`.
 

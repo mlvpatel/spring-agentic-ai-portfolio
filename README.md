@@ -69,7 +69,7 @@ Bare `/api/v1/generate` and `/api/v1/ingest` are not routed (no catch-all). Use 
 ```bash
 ./mvnw -DskipTests package
 cp infra/compose/.env.example infra/compose/.env
-# set GATEWAY_SECURITY_APIKEY
+# set GATEWAY_SECURITY_APIKEY, DESIGN_RAG_DB_PASSWORD, and PAPER_LAB_DB_PASSWORD
 cd infra/compose
 # Prod image build (Redis included; P2/P8 use H2 until Postgres profile is on):
 docker compose -f docker-compose.yml --env-file .env up -d --build
@@ -86,15 +86,15 @@ Gateway listens on host `:8080`. Stress notes: [docs/stress-results.md](docs/str
 ## Security model
 
 - Edge requires `X-API-Key` or `Authorization: Bearer` equal to `GATEWAY_SECURITY_APIKEY`. JWT-looking `ey*` strings and `valid-test-token` are not bypasses.
-- Optional OIDC: set `OIDC_ISSUER_URI` so the gateway also accepts Bearer JWTs from that issuer. Off when blank.
+- Optional OIDC: set `OIDC_ISSUER_URI` so the gateway also accepts Bearer JWTs from that issuer. A valid token's `sub` claim is the rate-limit caller. Off when blank.
 - Each app also checks its own API key env var.
-- Rate limit: in-memory for unit tests; Redis when `REDIS_URL` is set (prod compose sets `redis://redis:6379`).
+- Rate limit: in-memory token bucket in unit tests; Redis token bucket (replenish rate and burst) when `REDIS_URL` is set (prod compose sets `redis://redis:6379`).
 - Quality gate fails sources that match a hardcoded-secret pattern.
 - Design RAG and Kotlin RAG refuse empty corpora instead of inventing content.
 
 ## AI assist
 
-`libs/shared` ships `PortfolioAiClient`. Without `OPENAI_API_KEY` (and without `SPRING_AI_MODEL_CHAT=openai`), every assist call returns a deterministic `offline-...` string. Tests assert the offline path.
+`libs/shared` ships `PortfolioAiClient`. Without `OPENAI_API_KEY` (and without `SPRING_AI_MODEL_CHAT=openai`), every assist call returns a deterministic `offline-...` string. A live call waits at most 20 seconds and returns that same string if the model times out or throws. Tests assert the offline path and that fallback. They do not call OpenAI.
 
 ## Build and test
 
@@ -108,7 +108,7 @@ Maven tests use H2 for P2/P8. They do not require Postgres, Redis, Docker, or an
 
 Close-out date: 2026-10-07. The code in this repo is finished.
 
-`./mvnw -B test` on 2026-10-07: BUILD SUCCESS, 118 tests, 0 failures, 0 errors, 0 skipped, wall time 32.776 s.
+`./mvnw -B test` on 2026-10-07, finished 2026-10-07T04:34:35+02:00: BUILD SUCCESS, 123 tests, 0 failures, 0 errors, 0 skipped. Maven total time 41.967 s.
 
 These are the only leftovers. They need you, not more code.
 

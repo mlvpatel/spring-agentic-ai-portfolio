@@ -1,11 +1,13 @@
 # Optional Postgres (compose --profile pgvector|postgres|prod → design-rag-db).
+# Compose does not publish that database on the host. Set DESIGN_RAG_JDBC_URL
+# when this app runs outside the compose network.
 # Retrieval under this profile uses in-memory hashing embeddings + real cosine similarity.
 # JDBC still stores tokens; Spring AI paid embeddings are not required for unit tests.
 spring:
   datasource:
-    url: ${DESIGN_RAG_JDBC_URL:jdbc:postgresql://localhost:5433/design}
+    url: ${DESIGN_RAG_JDBC_URL:jdbc:postgresql://design-rag-db:5432/design}
     username: ${DESIGN_RAG_JDBC_USER:postgres}
-    password: ${DESIGN_RAG_JDBC_PASSWORD:design}
+    password: ${DESIGN_RAG_JDBC_PASSWORD:}
     driver-class-name: org.postgresql.Driver
 
 design:

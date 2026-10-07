@@ -6,7 +6,7 @@ x-jar-app: &jar-app
   image: eclipse-temurin:21-jre
   build: null
   working_dir: /app
-  command: ["java", "-jar", "/app/app.jar"]
+  command: ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]
 
 services:
   yagni-copilot:
