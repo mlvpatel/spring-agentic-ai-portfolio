@@ -48,7 +48,7 @@
           Spring AI 2.0.x requires Boot 4.0.x / 4.1.x.
           Spring Cloud 2025.1.x aligns with Boot 4.x (train pins 4.0.8; parent 4.1.1 is supported).
         -->
-        <spring-ai.version>2.0.1</spring-ai.version>
+        <spring-ai.version>2.0.2</spring-ai.version>
         <spring-cloud.version>2025.1.3</spring-cloud.version>
         <springdoc.version>3.1.1</springdoc.version>
         <javaparser.version>3.26.1</javaparser.version>
